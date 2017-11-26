@@ -1,0 +1,5347 @@
+%!PS-Adobe-3.0
+%%Creator: gEDA gschem 1.7.1-20110619-179-g400f396
+%%CreationDate: Thu Jan 12 13:54:24 2012
+%%Title: /home/jensenn/work/dev/circuits/proto_board/EtherCAT/EtherCAT_ET1200_ASICs.sch
+%%Author: jensenn
+%%BoundingBox: 0 0 612 792
+%%Orientation: Landscape
+%%Pages: 1
+%%Endcomments
+%%BeginProlog
+% Prolog for gEDA, define all the functions needed for rendering
+% schematics on Postscript devices
+
+
+% Draw a line from the second coordinate to the first
+% x2 y2 x1 y1 width line -
+/line {
+    setlinewidth
+    % pop off first element and moveto
+    moveto
+    % pop off remaining elements and draw a line segment
+    lineto
+    % draw it
+    stroke
+} bind def
+
+
+% Draw a dot
+% x y r dot -
+/dot {
+    0 360 arc fill
+} bind def
+
+% Draw a dot-dashed line, a bunch of lined segments,
+% if the array element only has length two, draw a dot.
+% [ [x2 y2 x1 y1] [x4 y4 x3 y3] [x5 y5] ... ] width dashed -
+/width 0 def
+/dashed {
+    dup 2.0 div /width exch def
+    setlinewidth
+    % pop off each line segment and draw it as a dot or as a line
+    {
+	aload length 2 gt
+	{ moveto lineto stroke}
+	{ width dot } ifelse
+    } forall
+} bind def
+
+% Draw an arc segment
+% x y r ang1 ang2 width darc -
+/darc {
+    setlinewidth
+    arc stroke
+} bind def
+
+% Draw a series of arc segment bits, if the array element only has a single
+% element in it, draw a dot.
+% [ [sa1 ea1] [sa2 ea2] ... ] x y r width dashedarc -
+/x 0 def
+/y 0 def
+/dashedarc {
+    dup /width exch def
+    setlinewidth
+    /r exch def  
+    /y exch def
+    /x exch def
+    { aload length 1 gt
+	{
+	    % this element had two angles in it
+	    % extract start and stop angles
+	    x y r   % drop x y and r onto stack
+		    % at this point we have: sa ea x y r
+		    % we need                      x y r sa ea
+		    % so..
+	    5 -2 roll
+	    % and add it to the current path, and draw it
+	    arc stroke
+	} {
+	    % this element only had one angle in it, place a
+	    % filled dot at the appropriate place
+	    % compute center point of the arc using the angle
+	    % that is on the top of the stack
+	    dup   		% angle angle
+	    cos r mul x add 	% angle x
+	    exch		% x angle
+	    sin r mul y add	% x y
+	    width		% x y width/2
+	    dot			% draw the dot
+	} ifelse
+    } forall
+
+    % Now draw it
+    stroke
+} bind def
+
+% Draw a box
+% width height x y linethickness box -
+/box {
+    setlinewidth
+    moveto
+    exch dup 0 rlineto	 % w h, h w w 0      -- Draw bottom line
+    exch 0 exch rlineto	 % h w, w h 0, w 0 h -- Draw right line 
+    neg 0 rlineto	 % w, -w 0           -- Draw Top line
+    closepath		 % finish and draw it
+    stroke
+} bind def			     
+
+% Draw a filled box
+% width height x y fbox -
+/fbox {
+    moveto
+    exch dup 0 rlineto	
+    exch 0 exch rlineto	
+    neg 0 rlineto		
+    closepath			
+    fill			
+} bind def
+
+% Font reincoding utilities
+
+% ISOLatin1Encoding, extended with remaining uncoded glyphs
+/ISOLatin1Extended [
+    /.notdef /Lslash /lslash /OE /oe /Scaron /scaron /Zcaron /zcaron
+    /Ydieresis /trademark /bullet /dagger /daggerdbl /ellipsis /emdash
+    /endash /fi /fl /florin /fraction /guilsinglleft /guilsinglright
+    /perthousand /quotedblbase /quotedblleft /quotedblright
+    /quotesinglbase /quotesingle /.notdef /.notdef /.notdef /space
+    /exclam /quotedbl /numbersign /dollar /percent /ampersand
+    /quoteright /parenleft /parenright /asterisk /plus /comma /minus
+    /period /slash /zero /one /two /three /four /five /six /seven /eight
+    /nine /colon /semicolon /less /equal /greater /question /at /A /B /C
+    /D /E /F /G /H /I /J /K /L /M /N /O /P /Q /R /S /T /U /V /W /X /Y /Z
+    /bracketleft /backslash /bracketright /asciicircum /underscore
+    /quoteleft /a /b /c /d /e /f /g /h /i /j /k /l /m /n /o /p /q /r /s
+    /t /u /v /w /x /y /z /braceleft /bar /braceright /asciitilde
+    /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+    /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+    /.notdef /.notdef /.notdef /dotlessi /grave /acute /circumflex
+    /tilde /macron /breve /dotaccent /dieresis /.notdef /ring /cedilla
+    /.notdef /hungarumlaut /ogonek /caron /space /exclamdown /cent
+    /sterling /currency /yen /brokenbar /section /dieresis /copyright
+    /ordfeminine /guillemotleft /logicalnot /hyphen /registered /macron
+    /degree /plusminus /twosuperior /threesuperior /acute /mu /paragraph
+    /periodcentered /cedilla /onesuperior /ordmasculine /guillemotright
+    /onequarter /onehalf /threequarters /questiondown /Agrave /Aacute
+    /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla /Egrave /Eacute
+    /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex /Idieresis /Eth
+    /Ntilde /Ograve /Oacute /Ocircumflex /Otilde /Odieresis /multiply
+    /Oslash /Ugrave /Uacute /Ucircumflex /Udieresis /Yacute /Thorn
+    /germandbls /agrave /aacute /acircumflex /atilde /adieresis /aring
+    /ae /ccedilla /egrave /eacute /ecircumflex /edieresis /igrave
+    /iacute /icircumflex /idieresis /eth /ntilde /ograve /oacute
+    /ocircumflex /otilde /odieresis /divide /oslash /ugrave /uacute
+    /ucircumflex /udieresis /yacute /thorn /ydieresis
+] def
+
+% `new-font-name' `encoding-vector' `old-font-name' RE -
+/RE {
+    findfont
+    dup maxlength dict begin {
+        1 index /FID ne { def } { pop pop } ifelse
+    } forall
+    /Encoding exch def
+    dup /FontName exch def
+    currentdict end definefont pop
+} bind def
+
+% Text handling functions, select the font and scale it, then we need
+% only to apply the appropriate transformations to get the text
+% justified into the right spots.  The bad thing here is that we don't
+% do any kerning, so the output may look a bit strange.
+
+% compute the height of one character and return lly and ury
+% (char) charheight lly ury
+/charheight {
+    gsave			% push graphics state
+	newpath			% clear current path
+	0 0 moveto		% Set current point
+	false charpath		% get path
+	flattenpath		% flatten path
+	pathbbox		% stack = llx lly urx ury
+	exch pop		% stack = llx lly ury
+	3 -1 roll pop		% stack = lly ury
+    grestore			% pop graphics state
+} bind def
+
+% compute the height of a string, one character at a time
+% (string) stringheight lly ury
+/lly 0.0 def
+/ury 0.0 def
+
+/stringheight {
+    /lly 0.0 def			% initial value of heightmin
+    /ury 0.0 def			% initial value of heightmax
+    {				% work through string
+	( ) dup 0 4 -1 roll put	% create one character string
+	charheight		% measure it's height
+	dup ury gt {		% if ury gt heightmax
+	    /ury exch def	% update with new value
+	} {
+	    pop			% else discard ury
+	} ifelse
+	dup lly lt {		% if lly lt heightmin
+	    /lly exch def	% update with new value
+	} {
+	    pop			% else discard lly
+	} ifelse
+    } forall
+    lly ury			% Return the results
+} bind def
+
+% calculate the string width taking into account the escapes.
+/mystrx 0.0 def
+/mystry 0.0 def
+/mystresc false def
+
+/mystringwidth {
+    /mystrx 0.0 def
+    /mystry 0.0 def
+    /mystresc false def
+    {				% work through string
+	% did we process the escape character last?
+	mystresc {
+	    % last character was escape
+	    % handle the escape
+	    % is it an _ = 95?
+	    dup 95 eq {
+		pop  % we don't need the character anymore
+		% toggle drawing overbars
+		0.0 0.0 % make it like it never happened...
+	    } {
+		% otherwise measure the character 
+		(\\ ) dup 1 4 -1 roll put % count a \ and the character
+		stringwidth
+	    } ifelse
+	    % and reset the flag
+	    /mystresc false def
+	} {
+	    % last character was not escape
+	    % is this escape
+	    dup 92 eq {
+		% yes, escape character, set flag
+		/mystresc true def
+		pop % drop character
+		0.0 0.0 % make like this character has no width and height
+	    } {
+		( ) dup 0 4 -1 roll put	% create one character string
+		stringwidth		% measure it's height/width
+	    } ifelse
+	} ifelse
+	% accumulate x and y movements
+	mystry add /mystry exch def
+	mystrx add /mystrx exch def
+    } forall
+    mystrx mystry % drop results on stack
+} bind def
+
+% Render a string with overbars
+%
+/escaped false def
+/drawoverbar false def
+/fontsize 0.0 def
+
+%string1 string2 append -
+/append {
+    2 copy length exch length add % find new length
+    string dup % string1 string2 string string
+    4 2 roll % string string string1 string2
+    2 index 0 3 index
+    % string string string1 string2 string 0 string1
+    putinterval % string string string1 string2
+    exch length exch putinterval
+} bind def
+
+% If drawoverbar is set, draw a line of the same length as the given string
+% string overbarshowline -
+/overbarshowline {
+    % print overbar if necessary
+    stringwidth pop 0
+    drawoverbar {
+        rlineto
+        gsave stroke grestore
+    } {
+        rmoveto
+    } ifelse
+} bind def
+
+% Draws overbars for the given string, then shows the string itself
+% string overbarshow
+/overbarshow {
+    /overbarshowacc () def
+    /overbarshowtxt () def
+
+    gsave
+    fontsize 10.0 div setlinewidth
+    0 fontsize rmoveto  % move to (0,overbarheight)
+
+    {				% work through string
+	escaped {
+	    % the last character was the escape
+	    % handle the escape
+	    % is it an _ = 95?
+	    dup 95 eq {
+		pop  % we don't need the character anymore
+                overbarshowacc overbarshowline
+                % toggle drawing overbars
+		/drawoverbar drawoverbar not def
+
+                % Append the contents off the accumulator to the text
+                % string we're eventually going to show
+                /overbarshowtxt overbarshowtxt overbarshowacc append def
+
+                % clear accumulator
+                /overbarshowacc () def
+	    } {
+                % add to accumulator
+                (\\ ) dup 1 4 -1 roll put
+                overbarshowacc exch append
+                /overbarshowacc exch def
+	    } ifelse
+	    % and reset the flag
+	    /escaped false def
+	} {
+	    % check for escape character \ = 92
+	    dup 92 eq {
+		% yes, escape character, set flag
+		/escaped true def
+		pop % drop character
+	    } {
+                % add to accumulator
+                ( ) dup 0 4 -1 roll put
+                overbarshowacc exch append
+                /overbarshowacc exch def
+	    } ifelse
+	} ifelse
+    } forall
+    % Catch any leftovers
+    overbarshowacc overbarshowline
+    overbarshowtxt overbarshowacc append
+
+    grestore
+    show
+} bind def
+
+% 
+% hcenter rjustify vcenter vjustify spacing [(line1) (line2) ... ] rot x y size text -
+/stringw 0.0 def
+/stringh 0.0 def
+/spacing 0.0 def
+/strings [ ] def
+/stringtxt ( ) def
+/stringcount 0 def
+/rot 0.0 def
+
+/text {
+    gsave	        % save state for later
+    /drawoverbar false def      % start by not drawing overbars
+
+    dup /fontsize exch def  % save font size for corrections later
+    % do font selection 
+    /gEDAFont findfont
+    exch scalefont
+    setfont
+
+    % set up coordinates
+    translate           % move origin to given point
+    rotate		% rotate so that text is drawn
+    0 0 moveto
+    dup length /stringcount exch def			% Get number of strings
+    /strings exch def     				% save strings
+    /spacing exch def
+    % do we have more than 1 string to render?
+    stringcount 1 eq {
+	/stringtxt strings aload pop def		% get the string 
+	/stringw stringtxt mystringwidth pop neg def	% get the -width
+	/stringh stringtxt stringheight exch pop neg def% get the -height
+
+	% First do vertical calculations
+	% hcenter rjustify vcenter vjustify 
+	% vertical justification
+	{ 0 stringh rmoveto } if 
+	% vertical center
+	{ 0 stringh 0.3571425 mul rmoveto } if  % not 0.5, so that
+						% it looks nicer
+	% Then do horizontal calculations
+	% right justify
+	{ stringw 0 rmoveto } if
+	% center
+	{ stringw 2.0 div 0 rmoveto } if
+	% Draw the text
+	stringtxt overbarshow
+    } {
+	% More than one line, compute bounding box for the text
+
+	% vertical height, don't use the actual hieght of the characters
+	% assume that the user wants to make the baselines line up with two
+	% text boxes placed side by side
+	/stringh stringcount spacing mul neg def
+	% Now figure out horizontal size, this amounts to keeping track
+	% of the longest string
+	/stringw 0.0 def
+	strings {
+	    mystringwidth pop
+	    dup stringw gt {
+		/stringw exch def
+	    } {
+		pop
+	    } ifelse
+	} forall
+	/stringw stringw neg def 	% get the -width
+	
+	% First do vertical calculations
+	% hcenter rjustify vcenter vjustify 
+	% vertical justification
+	{ 0 stringh fontsize add rmoveto } if 
+	% vertical center
+	{ 0 stringh 0.5 mul rmoveto } if 
+	% Then do horizontal calculations
+	% right justify
+	{ stringw 0 rmoveto } if
+	% center
+	{ stringw 2.0 div 0 rmoveto } if
+	% now move up to the first line and begin rendering
+	0 stringcount 1 sub spacing mul rmoveto
+	strings {
+	    gsave		% Save starting point
+	    overbarshow		% render the text
+	    grestore
+	    0 spacing neg rmoveto
+	} forall
+    } ifelse
+    grestore 	% Restore old state
+} bind def
+
+
+%%EndProlog
+%%Page: 1 1
+/gEDAFont ISOLatin1Extended /Helvetica RE
+2 setlinecap
+0.072000 0.072000 scale
+7769 500 translate 90 rotate
+0.302115 0.302115 scale
+-33000 -35300 translate
+gsave
+0.400 0.400 0.400 setrgbcolor
+33000 35300 66100 35300 10 line
+66100 35300 66100 58600 10 line
+66100 58600 33000 58600 10 line
+33000 58600 33000 35300 10 line
+61800 36100 61800 35500 10 line
+gsave
+false false false false 161.777776 [(FILE:) ] 0 58400 35900 144.444443 text
+grestore
+gsave
+false false false false 161.777776 [(REVISION:) ] 0 61900 35900 144.444443 text
+grestore
+gsave
+false false false false 161.777776 [(DRAWN BY: ) ] 0 61900 35600 144.444443 text
+grestore
+gsave
+false false false false 161.777776 [(PAGE) ] 0 58400 35600 144.444443 text
+grestore
+gsave
+false false false false 161.777776 [(OF) ] 0 60100 35600 144.444443 text
+grestore
+gsave
+false false false false 161.777776 [(TITLE) ] 0 58400 36200 144.444443 text
+grestore
+58300 35500 65900 35500 10 line
+65900 35500 65900 36900 10 line
+65900 36900 58300 36900 10 line
+58300 36900 58300 35500 10 line
+58300 36100 65900 36100 10 line
+33200 35500 65900 35500 10 line
+65900 35500 65900 58400 10 line
+65900 58400 33200 58400 10 line
+33200 58400 33200 35500 10 line
+33200 37269 33000 37269 10 line
+33200 39237 33000 39237 10 line
+33200 41206 33000 41206 10 line
+33200 43174 33000 43174 10 line
+33200 45143 33000 45143 10 line
+33200 47111 33000 47111 10 line
+33200 49080 33000 49080 10 line
+33200 51048 33000 51048 10 line
+33200 53017 33000 53017 10 line
+33200 54985 33000 54985 10 line
+33200 56954 33000 56954 10 line
+gsave
+true false true false 161.777776 [(A) ] 0 33100 36284 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(B) ] 0 33100 38253 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(C) ] 0 33100 40221 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(D) ] 0 33100 42190 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(E) ] 0 33100 44158 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(F) ] 0 33100 46127 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(G) ] 0 33100 48095 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(H) ] 0 33100 50064 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(I) ] 0 33100 52032 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(J) ] 0 33100 54001 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(K) ] 0 33100 55969 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(L) ] 0 33100 57938 144.444443 text
+grestore
+34969 35500 34969 35300 10 line
+36937 35500 36937 35300 10 line
+38906 35500 38906 35300 10 line
+40874 35500 40874 35300 10 line
+42843 35500 42843 35300 10 line
+44811 35500 44811 35300 10 line
+46780 35500 46780 35300 10 line
+48748 35500 48748 35300 10 line
+50717 35500 50717 35300 10 line
+52685 35500 52685 35300 10 line
+54654 35500 54654 35300 10 line
+56622 35500 56622 35300 10 line
+58591 35500 58591 35300 10 line
+60559 35500 60559 35300 10 line
+62528 35500 62528 35300 10 line
+64496 35500 64496 35300 10 line
+gsave
+true false true false 161.777776 [(1) ] 0 33984 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(2) ] 0 35953 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(3) ] 0 37921 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(4) ] 0 39890 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(5) ] 0 41858 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(6) ] 0 43827 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(7) ] 0 45795 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(8) ] 0 47764 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(9) ] 0 49732 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(10) ] 0 51701 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(11) ] 0 53669 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(12) ] 0 55638 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(13) ] 0 57606 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(14) ] 0 59575 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(15) ] 0 61543 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(16) ] 0 63512 35400 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(17) ] 0 65480 35400 144.444443 text
+grestore
+66100 37269 65900 37269 10 line
+66100 39237 65900 39237 10 line
+66100 41206 65900 41206 10 line
+66100 43174 65900 43174 10 line
+66100 45143 65900 45143 10 line
+66100 47111 65900 47111 10 line
+66100 49080 65900 49080 10 line
+66100 51048 65900 51048 10 line
+66100 53017 65900 53017 10 line
+66100 54985 65900 54985 10 line
+66100 56954 65900 56954 10 line
+gsave
+true false true false 161.777776 [(A) ] 0 66000 36284 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(B) ] 0 66000 38253 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(C) ] 0 66000 40221 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(D) ] 0 66000 42190 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(E) ] 0 66000 44158 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(F) ] 0 66000 46127 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(G) ] 0 66000 48095 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(H) ] 0 66000 50064 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(I) ] 0 66000 52032 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(J) ] 0 66000 54001 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(K) ] 0 66000 55969 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(L) ] 0 66000 57938 144.444443 text
+grestore
+34969 58600 34969 58400 10 line
+36937 58600 36937 58400 10 line
+38906 58600 38906 58400 10 line
+40874 58600 40874 58400 10 line
+42843 58600 42843 58400 10 line
+44811 58600 44811 58400 10 line
+46780 58600 46780 58400 10 line
+48748 58600 48748 58400 10 line
+50717 58600 50717 58400 10 line
+52685 58600 52685 58400 10 line
+54654 58600 54654 58400 10 line
+56622 58600 56622 58400 10 line
+58591 58600 58591 58400 10 line
+60559 58600 60559 58400 10 line
+62528 58600 62528 58400 10 line
+64496 58600 64496 58400 10 line
+gsave
+true false true false 161.777776 [(1) ] 0 33984 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(2) ] 0 35953 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(3) ] 0 37921 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(4) ] 0 39890 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(5) ] 0 41858 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(6) ] 0 43827 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(7) ] 0 45795 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(8) ] 0 47764 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(9) ] 0 49732 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(10) ] 0 51701 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(11) ] 0 53669 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(12) ] 0 55638 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(13) ] 0 57606 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(14) ] 0 59575 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(15) ] 0 61543 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(16) ] 0 63512 58500 144.444443 text
+grestore
+gsave
+true false true false 161.777776 [(17) ] 0 65480 58500 144.444443 text
+grestore
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+36350 48850 40750 48850 10 line
+40750 48850 40750 58050 10 line
+40750 58050 36350 58050 10 line
+36350 58050 36350 48850 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+true false false false 202.222224 [(ET1200) ] 0 38550 57450 180.555557 text
+grestore
+0.000 0.000 0.000 setrgbcolor
+36050 51850 36350 51850 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(TESTMODE) ] 0 36400 51850 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(1) ] 0 36250 51900 144.444443 text
+grestore
+41050 56050 40750 56050 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(LINK_MII\(0\)) ] 0 40700 56050 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(2) ] 0 40850 56100 144.444443 text
+grestore
+41050 55850 40750 55850 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_ERR\(0\)) ] 0 40700 55850 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(3) ] 0 40850 55900 144.444443 text
+grestore
+41050 52050 40750 52050 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(EBUS\(1\)-TX-) ] 0 40700 52050 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(4) ] 0 40850 52100 144.444443 text
+grestore
+41050 51850 40750 51850 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(EBUS\(1\)-TX+) ] 0 40700 51850 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(5) ] 0 40850 51900 144.444443 text
+grestore
+36050 57250 36350 57250 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(VCC I/O \(3.3V\)) ] 0 36400 57250 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(6) ] 0 36250 57300 144.444443 text
+grestore
+36050 57050 36350 57050 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(GND I/O) ] 0 36400 57050 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(7) ] 0 36250 57100 144.444443 text
+grestore
+41050 52450 40750 52450 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(EBUS\(1\)-RX-) ] 0 40700 52450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(8) ] 0 40850 52500 144.444443 text
+grestore
+41050 52250 40750 52250 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(EBUS\(1\)-RX+) ] 0 40700 52250 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(9) ] 0 40850 52300 144.444443 text
+grestore
+41050 55650 40750 55650 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(MI_CLK) ] 0 40700 55650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(10) ] 0 40850 55700 144.444443 text
+grestore
+41050 55450 40750 55450 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(TX_ENA\(0\)) ] 0 40700 55450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(11) ] 0 40850 55500 144.444443 text
+grestore
+41050 57250 40750 57250 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(PERR\(0\)) ] 0 40700 57250 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(12) ] 0 40850 57300 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+40800 56850 50 0 360 10 darc
+0.000 0.000 0.000 setrgbcolor
+41050 56850 40850 56850 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(PERR\(1\)) ] 0 40700 56850 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(13) ] 0 40850 56900 144.444443 text
+grestore
+36050 57650 36350 57650 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(VCC \(3.3V\)) ] 0 36400 57650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(14) ] 0 36250 57700 144.444443 text
+grestore
+36050 57450 36350 57450 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(GND) ] 0 36400 57450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(15) ] 0 36250 57500 144.444443 text
+grestore
+41050 57450 40750 57450 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(LinkAct\(0\)) ] 0 40700 57450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(16) ] 0 40850 57500 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+40800 57050 50 0 360 10 darc
+0.000 0.000 0.000 setrgbcolor
+41050 57050 40850 57050 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(LinkAct\(1\)) ] 0 40700 57050 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(17) ] 0 40850 57100 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+40800 57650 50 0 360 10 darc
+0.000 0.000 0.000 setrgbcolor
+41050 57650 40850 57650 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RUN/EEPROM_SIZE) ] 0 40700 57650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(18) ] 0 40850 57700 144.444443 text
+grestore
+36050 52850 36350 52850 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(EEPROM CLK) ] 0 36400 52850 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(19) ] 0 36250 52900 144.444443 text
+grestore
+36050 52650 36350 52650 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(EEPROM DATA) ] 0 36400 52650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(20) ] 0 36250 52700 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+36350 51400 36450 51450 10 line
+36450 51450 36350 51500 10 line
+0.000 0.000 0.000 setrgbcolor
+36050 51450 36350 51450 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(OSC_IN) ] 0 36500 51450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(21) ] 0 36250 51500 144.444443 text
+grestore
+36050 51050 36350 51050 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(OSC_OUT) ] 0 36400 51050 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(22) ] 0 36250 51100 144.444443 text
+grestore
+36050 56250 36350 56250 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(GND PLL) ] 0 36400 56250 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(23) ] 0 36250 56300 144.444443 text
+grestore
+36050 56450 36350 56450 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(VCC PLL \(2.5V\)) ] 0 36400 56450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(24) ] 0 36250 56500 144.444443 text
+grestore
+36050 50250 36350 50250 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(RBIAS) ] 0 36400 50250 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(25) ] 0 36250 50300 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+36300 50650 50 0 360 10 darc
+0.000 0.000 0.000 setrgbcolor
+36050 50650 36250 50650 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(Reset) ] 0 36400 50650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(26) ] 0 36250 50700 144.444443 text
+grestore
+41050 51050 40750 51050 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_D\(0\)[3]) ] 0 40700 51050 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(27) ] 0 40850 51100 144.444443 text
+grestore
+41050 50850 40750 50850 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_D\(0\)[2]) ] 0 40700 50850 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(28) ] 0 40850 50900 144.444443 text
+grestore
+41050 50650 40750 50650 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_D\(0\)[1]) ] 0 40700 50650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(29) ] 0 40850 50700 144.444443 text
+grestore
+41050 50450 40750 50450 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_D\(0\)[0]) ] 0 40700 50450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(30) ] 0 40850 50500 144.444443 text
+grestore
+41050 50250 40750 50250 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_DV\(0\)) ] 0 40700 50250 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(31) ] 0 40850 50300 144.444443 text
+grestore
+41050 50050 40750 50050 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_CLK\(0\)) ] 0 40700 50050 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(32) ] 0 40850 50100 144.444443 text
+grestore
+41050 49850 40750 49850 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(TX_D\(0\)[3]/C25_SHI[1]) ] 0 40700 49850 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(33) ] 0 40850 49900 144.444443 text
+grestore
+41050 49650 40750 49650 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(TX_D\(0\)[2]/C25_SHI[0]) ] 0 40700 49650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(34) ] 0 40850 49700 144.444443 text
+grestore
+41050 49450 40750 49450 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(TX_D\(0\)[1]/C25_ENA) ] 0 40700 49450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(35) ] 0 40850 49500 144.444443 text
+grestore
+41050 49250 40750 49250 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(TX_D\(0\)[0]/PHYAD_OFF) ] 0 40700 49250 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(36) ] 0 40850 49300 144.444443 text
+grestore
+41050 53250 40750 53250 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(CPU_CLK) ] 0 40700 53250 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(37) ] 0 40850 53300 144.444443 text
+grestore
+41050 53450 40750 53450 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(GPO[0]) ] 0 40700 53450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(38) ] 0 40850 53500 144.444443 text
+grestore
+41050 53650 40750 53650 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(EEPROM_Loaded) ] 0 40700 53650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(39) ] 0 40850 53700 144.444443 text
+grestore
+41050 53850 40750 53850 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(SPI_IRQ) ] 0 40700 53850 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(40) ] 0 40850 53900 144.444443 text
+grestore
+36050 56850 36350 56850 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(VCC Core \(2.5V\)) ] 0 36400 56850 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(41) ] 0 36250 56900 144.444443 text
+grestore
+36050 56650 36350 56650 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(GND Core) ] 0 36400 56650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(42) ] 0 36250 56700 144.444443 text
+grestore
+41050 54050 40750 54050 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(SPI_DO) ] 0 40700 54050 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(43) ] 0 40850 54100 144.444443 text
+grestore
+41050 54250 40750 54250 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(SPI_DI) ] 0 40700 54250 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(44) ] 0 40850 54300 144.444443 text
+grestore
+41050 54450 40750 54450 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(SPI_SEL) ] 0 40700 54450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(45) ] 0 40850 54500 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+40750 54600 40650 54650 10 line
+40650 54650 40750 54700 10 line
+0.000 0.000 0.000 setrgbcolor
+41050 54650 40750 54650 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(SPI_CLK) ] 0 40600 54650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(46) ] 0 40850 54700 144.444443 text
+grestore
+36050 54050 36350 54050 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(LATCH[0]) ] 0 36400 54050 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(47) ] 0 36250 54100 144.444443 text
+grestore
+36050 53650 36350 53650 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(MI_DATA) ] 0 36400 53650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(48) ] 0 36250 53700 144.444443 text
+grestore
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+true false false false 202.222224 [(U4) ] 0 38550 58150 180.555557 text
+grestore
+0.000 0.000 0.933 setrgbcolor
+36050 51050 35750 51050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(OSC_OUT-0) ] 0 34600 50950 180.555557 text
+grestore
+36050 50650 35750 50650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(Reset-0) ] 0 34950 50600 180.555557 text
+grestore
+36050 50250 35750 50250 10 line
+36050 51450 35750 51450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(OSC_IN-0) ] 0 34800 51350 180.555557 text
+grestore
+36050 51850 35750 51850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 35250 51750 180.555557 text
+grestore
+36050 52650 35750 52650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EEPROM_DATA-0) ] 0 34150 52550 180.555557 text
+grestore
+36050 54050 35750 54050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(LATCH[0]-0) ] 0 34650 53950 180.555557 text
+grestore
+36050 56250 35750 56250 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 35200 56150 180.555557 text
+grestore
+36050 56450 35750 56450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC CorePLL-0 \(2.5V\)) ] 0 33800 56350 180.555557 text
+grestore
+36050 56650 35750 56650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 35200 56550 180.555557 text
+grestore
+36050 56850 35750 56850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC CorePLL-0 \(2.5V\)) ] 0 33800 56750 180.555557 text
+grestore
+36050 57050 35750 57050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 35200 56950 180.555557 text
+grestore
+36050 57250 35750 57250 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 34700 57150 180.555557 text
+grestore
+36050 57450 35750 57450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 35200 57350 180.555557 text
+grestore
+36050 57650 35750 57650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 34700 57550 180.555557 text
+grestore
+41350 57650 41050 57650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RUN/EEPROM_SIZE-0) ] 0 41450 57550 180.555557 text
+grestore
+41350 57450 41050 57450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(LinkAct\(0\)/MODE[0]-0) ] 0 41450 57350 180.555557 text
+grestore
+41350 57250 41050 57250 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(PERR\(0\)/CLK_MODE[0]-0) ] 0 41450 57150 180.555557 text
+grestore
+41350 57050 41050 57050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(LinkAct\(1\)/MODE[1]-0) ] 0 41450 56950 180.555557 text
+grestore
+41350 56850 41050 56850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(PERR\(1\)/CLK_MODE[1]-0) ] 0 41450 56750 180.555557 text
+grestore
+41350 56050 41050 56050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(LINK_MII\(0\)-0) ] 0 41450 55950 180.555557 text
+grestore
+41350 55850 41050 55850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_ERR\(0\)-0) ] 0 41450 55750 180.555557 text
+grestore
+41350 55650 41050 55650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(MI_CLK-0) ] 0 41450 55550 180.555557 text
+grestore
+41350 55450 41050 55450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(TX_ENA\(0\)-0) ] 0 41450 55350 180.555557 text
+grestore
+41350 54650 41050 54650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(SPI_CLK-0) ] 0 41450 54550 180.555557 text
+grestore
+41350 54450 41050 54450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(SPI_SEL-0) ] 0 41450 54350 180.555557 text
+grestore
+41350 54250 41050 54250 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(SPI_DI-0) ] 0 41450 54150 180.555557 text
+grestore
+41350 54050 41050 54050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(SPI_DO-0) ] 0 41450 53950 180.555557 text
+grestore
+41350 53850 41050 53850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(SPI_IRQ-0) ] 0 41450 53750 180.555557 text
+grestore
+41350 53650 41050 53650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EEPROM_Loaded-0) ] 0 41450 53550 180.555557 text
+grestore
+41350 53450 41050 53450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(CLKOUT25-0) ] 0 41450 53350 180.555557 text
+grestore
+41350 53250 41050 53250 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(CPU_CLK-0) ] 0 41450 53150 180.555557 text
+grestore
+41350 52050 41050 52050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EBUS\(1\)-RX-) ] 0 41450 51950 180.555557 text
+grestore
+41350 51850 41050 51850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EBUS\(1\)-RX+) ] 0 41450 51750 180.555557 text
+grestore
+41350 51050 41050 51050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_D\(0\)[3]-0) ] 0 41450 50950 180.555557 text
+grestore
+41350 50850 41050 50850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_D\(0\)[2]-0) ] 0 41450 50750 180.555557 text
+grestore
+41350 50650 41050 50650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_D\(0\)[1]-0) ] 0 41450 50550 180.555557 text
+grestore
+41350 50450 41050 50450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_D\(0\)[0]-0) ] 0 41450 50350 180.555557 text
+grestore
+41350 50250 41050 50250 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_DV\(0\)-0) ] 0 41450 50150 180.555557 text
+grestore
+41350 50050 41050 50050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_CLK\(0\)-0) ] 0 41450 49950 180.555557 text
+grestore
+41350 49850 41050 49850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(TX_D\(0\)[3]/C25_SHI[1]-0) ] 0 41450 49750 180.555557 text
+grestore
+41350 49650 41050 49650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(TX_D\(0\)[2]/C25_SHI[0]-0) ] 0 41450 49550 180.555557 text
+grestore
+41350 49250 41050 49250 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(TX_D\(0\)[0]/PHYAD_OFF-0) ] 0 41450 49150 180.555557 text
+grestore
+36050 52850 35750 52850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EEPROM_CLK-0) ] 0 34250 52750 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+35650 49750 35850 49650 10 line
+35850 49650 35650 49550 10 line
+35650 49550 35850 49450 10 line
+35850 49450 35650 49350 10 line
+35650 49750 35850 49850 10 line
+35850 49850 35750 49900 10 line
+0.000 0.000 0.000 setrgbcolor
+35750 50050 35750 49900 10 line
+35750 49150 35750 49302 10 line
+0.000 0.545 0.000 setrgbcolor
+35650 49351 35750 49300 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false true 202.222224 [(R55) ] 0 35550 49850 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(11k) ] 0 35250 49450 180.555557 text
+grestore
+35750 50250 35750 50050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+35750 48750 35750 48950 10 line
+0.000 0.545 0.000 setrgbcolor
+35650 48750 35850 48750 10 line
+35705 48700 35795 48700 10 line
+35730 48660 35770 48660 10 line
+grestore
+35750 49150 35750 48950 10 line
+41350 49450 41050 49450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(TX_D\(0\)[1]/C25_ENA-0) ] 0 41450 49350 180.555557 text
+grestore
+41350 52250 41050 52250 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EBUS\(1\)-TX+) ] 0 41450 52150 180.555557 text
+grestore
+41350 52450 41050 52450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EBUS\(1\)-TX-) ] 0 41450 52350 180.555557 text
+grestore
+36050 53650 35750 53650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(MI_DATA-0) ] 0 34700 53550 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+36350 38550 40750 38550 10 line
+40750 38550 40750 47750 10 line
+40750 47750 36350 47750 10 line
+36350 47750 36350 38550 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+true false false false 202.222224 [(ET1200) ] 0 38550 47150 180.555557 text
+grestore
+0.000 0.000 0.000 setrgbcolor
+36050 41550 36350 41550 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(TESTMODE) ] 0 36400 41550 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(1) ] 0 36250 41600 144.444443 text
+grestore
+41050 45750 40750 45750 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(LINK_MII\(0\)) ] 0 40700 45750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(2) ] 0 40850 45800 144.444443 text
+grestore
+41050 45550 40750 45550 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_ERR\(0\)) ] 0 40700 45550 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(3) ] 0 40850 45600 144.444443 text
+grestore
+41050 41750 40750 41750 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(EBUS\(1\)-TX-) ] 0 40700 41750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(4) ] 0 40850 41800 144.444443 text
+grestore
+41050 41550 40750 41550 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(EBUS\(1\)-TX+) ] 0 40700 41550 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(5) ] 0 40850 41600 144.444443 text
+grestore
+36050 46950 36350 46950 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(VCC I/O \(3.3V\)) ] 0 36400 46950 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(6) ] 0 36250 47000 144.444443 text
+grestore
+36050 46750 36350 46750 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(GND I/O) ] 0 36400 46750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(7) ] 0 36250 46800 144.444443 text
+grestore
+41050 42150 40750 42150 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(EBUS\(1\)-RX-) ] 0 40700 42150 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(8) ] 0 40850 42200 144.444443 text
+grestore
+41050 41950 40750 41950 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(EBUS\(1\)-RX+) ] 0 40700 41950 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(9) ] 0 40850 42000 144.444443 text
+grestore
+41050 45350 40750 45350 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(MI_CLK) ] 0 40700 45350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(10) ] 0 40850 45400 144.444443 text
+grestore
+41050 45150 40750 45150 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(TX_ENA\(0\)) ] 0 40700 45150 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(11) ] 0 40850 45200 144.444443 text
+grestore
+41050 46950 40750 46950 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(PERR\(0\)) ] 0 40700 46950 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(12) ] 0 40850 47000 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+40800 46550 50 0 360 10 darc
+0.000 0.000 0.000 setrgbcolor
+41050 46550 40850 46550 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(PERR\(1\)) ] 0 40700 46550 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(13) ] 0 40850 46600 144.444443 text
+grestore
+36050 47350 36350 47350 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(VCC \(3.3V\)) ] 0 36400 47350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(14) ] 0 36250 47400 144.444443 text
+grestore
+36050 47150 36350 47150 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(GND) ] 0 36400 47150 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(15) ] 0 36250 47200 144.444443 text
+grestore
+41050 47150 40750 47150 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(LinkAct\(0\)) ] 0 40700 47150 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(16) ] 0 40850 47200 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+40800 46750 50 0 360 10 darc
+0.000 0.000 0.000 setrgbcolor
+41050 46750 40850 46750 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(LinkAct\(1\)) ] 0 40700 46750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(17) ] 0 40850 46800 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+40800 47350 50 0 360 10 darc
+0.000 0.000 0.000 setrgbcolor
+41050 47350 40850 47350 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RUN/EEPROM_SIZE) ] 0 40700 47350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(18) ] 0 40850 47400 144.444443 text
+grestore
+36050 42550 36350 42550 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(EEPROM CLK) ] 0 36400 42550 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(19) ] 0 36250 42600 144.444443 text
+grestore
+36050 42350 36350 42350 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(EEPROM DATA) ] 0 36400 42350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(20) ] 0 36250 42400 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+36350 41100 36450 41150 10 line
+36450 41150 36350 41200 10 line
+0.000 0.000 0.000 setrgbcolor
+36050 41150 36350 41150 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(OSC_IN) ] 0 36500 41150 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(21) ] 0 36250 41200 144.444443 text
+grestore
+36050 40750 36350 40750 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(OSC_OUT) ] 0 36400 40750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(22) ] 0 36250 40800 144.444443 text
+grestore
+36050 45950 36350 45950 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(GND PLL) ] 0 36400 45950 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(23) ] 0 36250 46000 144.444443 text
+grestore
+36050 46150 36350 46150 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(VCC PLL \(2.5V\)) ] 0 36400 46150 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(24) ] 0 36250 46200 144.444443 text
+grestore
+36050 39950 36350 39950 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(RBIAS) ] 0 36400 39950 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(25) ] 0 36250 40000 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+36300 40350 50 0 360 10 darc
+0.000 0.000 0.000 setrgbcolor
+36050 40350 36250 40350 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(Reset) ] 0 36400 40350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(26) ] 0 36250 40400 144.444443 text
+grestore
+41050 40750 40750 40750 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_D\(0\)[3]) ] 0 40700 40750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(27) ] 0 40850 40800 144.444443 text
+grestore
+41050 40550 40750 40550 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_D\(0\)[2]) ] 0 40700 40550 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(28) ] 0 40850 40600 144.444443 text
+grestore
+41050 40350 40750 40350 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_D\(0\)[1]) ] 0 40700 40350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(29) ] 0 40850 40400 144.444443 text
+grestore
+41050 40150 40750 40150 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_D\(0\)[0]) ] 0 40700 40150 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(30) ] 0 40850 40200 144.444443 text
+grestore
+41050 39950 40750 39950 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_DV\(0\)) ] 0 40700 39950 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(31) ] 0 40850 40000 144.444443 text
+grestore
+41050 39750 40750 39750 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(RX_CLK\(0\)) ] 0 40700 39750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(32) ] 0 40850 39800 144.444443 text
+grestore
+41050 39550 40750 39550 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(TX_D\(0\)[3]/C25_SHI[1]) ] 0 40700 39550 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(33) ] 0 40850 39600 144.444443 text
+grestore
+41050 39350 40750 39350 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(TX_D\(0\)[2]/C25_SHI[0]) ] 0 40700 39350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(34) ] 0 40850 39400 144.444443 text
+grestore
+41050 39150 40750 39150 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(TX_D\(0\)[1]/C25_ENA) ] 0 40700 39150 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(35) ] 0 40850 39200 144.444443 text
+grestore
+41050 38950 40750 38950 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(TX_D\(0\)[0]/PHYAD_OFF) ] 0 40700 38950 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(36) ] 0 40850 39000 144.444443 text
+grestore
+41050 42950 40750 42950 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(CPU_CLK) ] 0 40700 42950 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(37) ] 0 40850 43000 144.444443 text
+grestore
+41050 43150 40750 43150 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(GPO[0]) ] 0 40700 43150 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(38) ] 0 40850 43200 144.444443 text
+grestore
+41050 43350 40750 43350 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(EEPROM_Loaded) ] 0 40700 43350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(39) ] 0 40850 43400 144.444443 text
+grestore
+41050 43550 40750 43550 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(SPI_IRQ) ] 0 40700 43550 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(40) ] 0 40850 43600 144.444443 text
+grestore
+36050 46550 36350 46550 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(VCC Core \(2.5V\)) ] 0 36400 46550 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(41) ] 0 36250 46600 144.444443 text
+grestore
+36050 46350 36350 46350 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(GND Core) ] 0 36400 46350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(42) ] 0 36250 46400 144.444443 text
+grestore
+41050 43750 40750 43750 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(SPI_DO) ] 0 40700 43750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(43) ] 0 40850 43800 144.444443 text
+grestore
+41050 43950 40750 43950 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(SPI_DI) ] 0 40700 43950 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(44) ] 0 40850 44000 144.444443 text
+grestore
+41050 44150 40750 44150 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(SPI_SEL) ] 0 40700 44150 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(45) ] 0 40850 44200 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+40750 44300 40650 44350 10 line
+40650 44350 40750 44400 10 line
+0.000 0.000 0.000 setrgbcolor
+41050 44350 40750 44350 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(SPI_CLK) ] 0 40600 44350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(46) ] 0 40850 44400 144.444443 text
+grestore
+36050 43750 36350 43750 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(LATCH[0]) ] 0 36400 43750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(47) ] 0 36250 43800 144.444443 text
+grestore
+36050 43350 36350 43350 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(MI_DATA) ] 0 36400 43350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(48) ] 0 36250 43400 144.444443 text
+grestore
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+true false false false 202.222224 [(U5) ] 0 38550 47850 180.555557 text
+grestore
+36050 40750 35750 40750 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(OSC_OUT-1) ] 0 34600 40650 180.555557 text
+grestore
+36050 40350 35750 40350 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(Reset-1) ] 0 34950 40300 180.555557 text
+grestore
+36050 39950 35750 39950 10 line
+36050 41150 35750 41150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(OSC_IN-1) ] 0 34800 41050 180.555557 text
+grestore
+36050 41550 35750 41550 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 35250 41450 180.555557 text
+grestore
+36050 42350 35750 42350 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EEPROM_DATA-1) ] 0 34150 42250 180.555557 text
+grestore
+36050 43750 35750 43750 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(LATCH[0]-1) ] 0 34650 43650 180.555557 text
+grestore
+36050 45950 35750 45950 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 35200 45850 180.555557 text
+grestore
+36050 46150 35750 46150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC CorePLL-1 \(2.5V\)) ] 0 33800 46050 180.555557 text
+grestore
+36050 46350 35750 46350 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 35200 46250 180.555557 text
+grestore
+36050 46550 35750 46550 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC CorePLL-1 \(2.5V\)) ] 0 33800 46450 180.555557 text
+grestore
+36050 46750 35750 46750 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 35200 46650 180.555557 text
+grestore
+36050 46950 35750 46950 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 34700 46850 180.555557 text
+grestore
+36050 47150 35750 47150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 35200 47050 180.555557 text
+grestore
+36050 47350 35750 47350 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 34700 47250 180.555557 text
+grestore
+41350 47350 41050 47350 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RUN/EEPROM_SIZE-1) ] 0 41450 47250 180.555557 text
+grestore
+41350 47150 41050 47150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(LinkAct\(0\)/MODE[0]-1) ] 0 41450 47050 180.555557 text
+grestore
+41350 46950 41050 46950 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(PERR\(0\)/CLK_MODE[0]-1) ] 0 41450 46850 180.555557 text
+grestore
+41350 46750 41050 46750 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(LinkAct\(1\)/MODE[1]-1) ] 0 41450 46650 180.555557 text
+grestore
+41350 46550 41050 46550 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(PERR\(1\)/CLK_MODE[1]-1) ] 0 41450 46450 180.555557 text
+grestore
+41350 45750 41050 45750 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(LINK_MII\(0\)-1) ] 0 41450 45650 180.555557 text
+grestore
+41350 45550 41050 45550 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_ERR\(0\)-1) ] 0 41450 45450 180.555557 text
+grestore
+41350 45350 41050 45350 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(MI_CLK1) ] 0 41450 45250 180.555557 text
+grestore
+41350 45150 41050 45150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(TX_ENA\(0\)-1) ] 0 41450 45050 180.555557 text
+grestore
+41350 44350 41050 44350 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(SPI_CLK1) ] 0 41450 44250 180.555557 text
+grestore
+41350 44150 41050 44150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(SPI_SEL-1) ] 0 41450 44050 180.555557 text
+grestore
+41350 43950 41050 43950 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(SPI_DI-1) ] 0 41450 43850 180.555557 text
+grestore
+41350 43750 41050 43750 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(SPI_DO-1) ] 0 41450 43650 180.555557 text
+grestore
+41350 43550 41050 43550 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(SPI_IRQ-1) ] 0 41450 43450 180.555557 text
+grestore
+41350 43350 41050 43350 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EEPROM_Loaded-1) ] 0 41450 43250 180.555557 text
+grestore
+41350 43150 41050 43150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(CLKOUT25-1) ] 0 41450 43050 180.555557 text
+grestore
+41350 42950 41050 42950 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(CPU_CLK-1) ] 0 41450 42850 180.555557 text
+grestore
+41350 41750 41050 41750 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EBUS\(1\)-TX-) ] 0 41450 41650 180.555557 text
+grestore
+41350 41550 41050 41550 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EBUS\(1\)-TX+) ] 0 41450 41450 180.555557 text
+grestore
+41350 40750 41050 40750 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_D\(0\)[3]-1) ] 0 41450 40650 180.555557 text
+grestore
+41350 40550 41050 40550 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_D\(0\)[2]-1) ] 0 41450 40450 180.555557 text
+grestore
+41350 40350 41050 40350 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_D\(0\)[1]-1) ] 0 41450 40250 180.555557 text
+grestore
+41350 40150 41050 40150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_D\(0\)[0]-1) ] 0 41450 40050 180.555557 text
+grestore
+41350 39950 41050 39950 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_DV\(0\)-1) ] 0 41450 39850 180.555557 text
+grestore
+41350 39750 41050 39750 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RX_CLK\(0\)-1) ] 0 41450 39650 180.555557 text
+grestore
+41350 39550 41050 39550 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(TX_D\(0\)[3]/C25_SHI[1]-1) ] 0 41450 39450 180.555557 text
+grestore
+41350 39350 41050 39350 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(TX_D\(0\)[2]/C25_SHI[0]-1) ] 0 41450 39250 180.555557 text
+grestore
+41350 38950 41050 38950 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(TX_D\(0\)[0]/PHYAD_OFF-1) ] 0 41450 38850 180.555557 text
+grestore
+36050 42550 35750 42550 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EEPROM_CLK-1) ] 0 34250 42450 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+35650 39450 35850 39350 10 line
+35850 39350 35650 39250 10 line
+35650 39250 35850 39150 10 line
+35850 39150 35650 39050 10 line
+35650 39450 35850 39550 10 line
+35850 39550 35750 39600 10 line
+0.000 0.000 0.000 setrgbcolor
+35750 39750 35750 39600 10 line
+35750 38850 35750 39002 10 line
+0.000 0.545 0.000 setrgbcolor
+35650 39051 35750 39000 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false true 202.222224 [(R80) ] 0 35550 39550 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(11k) ] 0 35250 39150 180.555557 text
+grestore
+35750 39950 35750 39750 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+35750 38450 35750 38650 10 line
+0.000 0.545 0.000 setrgbcolor
+35650 38450 35850 38450 10 line
+35705 38400 35795 38400 10 line
+35730 38360 35770 38360 10 line
+grestore
+35750 38850 35750 38650 10 line
+41350 39150 41050 39150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(TX_D\(0\)[1]/C25_ENA-1) ] 0 41450 39050 180.555557 text
+grestore
+41350 41950 41050 41950 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EBUS\(1\)-RX+) ] 0 41450 41850 180.555557 text
+grestore
+41350 42150 41050 42150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EBUS\(1\)-RX-) ] 0 41450 42050 180.555557 text
+grestore
+36050 43350 35750 43350 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(MI_DATA-1) ] 0 34800 43250 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 56800 47400 56600 10 line
+47400 56600 47300 56800 10 line
+47300 56800 47200 56600 10 line
+47200 56600 47100 56800 10 line
+47500 56800 47600 56600 10 line
+47600 56600 47650 56700 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 56700 47650 56700 10 line
+46900 56700 47052 56700 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 56800 47050 56700 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R56) ] 0 47200 56900 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 47150 56400 180.555557 text
+grestore
+47800 56700 48000 56700 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 202.222224 [(MI_DATA-0) ] 0 49050 56600 180.555557 text
+grestore
+46700 56700 46900 56700 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 45650 56650 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 56000 47400 55800 10 line
+47400 55800 47300 56000 10 line
+47300 56000 47200 55800 10 line
+47200 55800 47100 56000 10 line
+47500 56000 47600 55800 10 line
+47600 55800 47650 55900 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 55900 47650 55900 10 line
+46900 55900 47052 55900 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 56000 47050 55900 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R57) ] 0 47200 56100 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 47150 55600 180.555557 text
+grestore
+47800 55900 48000 55900 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 202.222224 [(EEPROM_Loaded-0) ] 0 49750 55800 180.555557 text
+grestore
+46700 55900 46900 55900 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 46200 55850 180.555557 text
+grestore
+57750 57850 57400 57850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RUN/EEPROM_SIZE-0) ] 0 57850 57750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+57400 57850 57200 57850 10 line
+56500 57850 56700 57850 10 line
+0.000 0.545 0.000 setrgbcolor
+57000 57750 56900 57850 10 line
+56900 57850 57000 57950 10 line
+57000 57750 57000 57950 10 line
+56900 57750 56900 57950 10 line
+56900 57850 56700 57850 10 line
+57000 57850 57200 57850 10 line
+56970 57710 56870 57610 10 line
+56870 57610 56920 57640 10 line
+56870 57610 56900 57660 10 line
+56900 57710 56800 57610 10 line
+56800 57610 56850 57640 10 line
+56800 57610 56830 57660 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false true 202.222224 [(D2) ] 0 56700 57750 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 57950 55800 57750 10 line
+55800 57750 55700 57950 10 line
+55700 57950 55600 57750 10 line
+55600 57750 55500 57950 10 line
+55900 57950 56000 57750 10 line
+56000 57750 56050 57850 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 57850 56050 57850 10 line
+55300 57850 55452 57850 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 57950 55450 57850 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R64) ] 0 55600 58050 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k) ] 0 55550 57550 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 57250 57000 57050 10 line
+57000 57050 56900 57250 10 line
+56900 57250 56800 57050 10 line
+56800 57050 56700 57250 10 line
+57100 57250 57200 57050 10 line
+57200 57050 57250 57150 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 57150 57250 57150 10 line
+56500 57150 56652 57150 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 57250 56650 57150 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R65) ] 0 56800 57350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 56750 56850 180.555557 text
+grestore
+57400 57150 57400 57850 10 line
+56500 57850 56200 57850 10 line
+56500 57150 55300 57150 10 line
+55300 57150 55300 57850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+55300 56950 55300 57150 10 line
+0.000 0.545 0.000 setrgbcolor
+55200 56950 55400 56950 10 line
+55255 56900 55345 56900 10 line
+55280 56860 55320 56860 10 line
+grestore
+48000 54300 47800 54300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(TX0_D\(0\)[1]/C25_ENA-0) ] 0 48150 54200 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 54400 47400 54200 10 line
+47400 54200 47300 54400 10 line
+47300 54400 47200 54200 10 line
+47200 54200 47100 54400 10 line
+47500 54400 47600 54200 10 line
+47600 54200 47650 54300 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 54300 47650 54300 10 line
+46900 54300 47052 54300 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 54400 47050 54300 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R59) ] 0 47200 54500 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 47150 54000 180.555557 text
+grestore
+46700 54300 46900 54300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 45650 54250 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 55200 47400 55000 10 line
+47400 55000 47300 55200 10 line
+47300 55200 47200 55000 10 line
+47200 55000 47100 55200 10 line
+47500 55200 47600 55000 10 line
+47600 55000 47650 55100 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 55100 47650 55100 10 line
+46900 55100 47052 55100 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 55200 47050 55100 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R58) ] 0 47200 55300 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 47150 54800 180.555557 text
+grestore
+47800 55100 48000 55100 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 202.222224 [(TX0_D\(0\)[0]/PHYAD_OFF-0) ] 0 50350 55000 180.555557 text
+grestore
+46700 55100 46900 55100 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 46200 55050 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 53600 47400 53400 10 line
+47400 53400 47300 53600 10 line
+47300 53600 47200 53400 10 line
+47200 53400 47100 53600 10 line
+47500 53600 47600 53400 10 line
+47600 53400 47650 53500 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 53500 47650 53500 10 line
+46900 53500 47052 53500 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 53600 47050 53500 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R60) ] 0 47200 53700 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 47150 53200 180.555557 text
+grestore
+47800 53500 48000 53500 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 202.222224 [(TX_D\(0\)[2]/C25_SHI[0]-0) ] 0 50150 53400 180.555557 text
+grestore
+46700 53500 46900 53500 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 46200 53450 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 52100 47400 51900 10 line
+47400 51900 47300 52100 10 line
+47300 52100 47200 51900 10 line
+47200 51900 47100 52100 10 line
+47500 52100 47600 51900 10 line
+47600 51900 47650 52000 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 52000 47650 52000 10 line
+46900 52000 47052 52000 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 52100 47050 52000 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R62) ] 0 47200 52200 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 47150 51700 180.555557 text
+grestore
+47800 52000 48000 52000 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 202.222224 [(TX_D\(0\)[3]/C25_SHI[1]-0) ] 0 50150 51900 180.555557 text
+grestore
+46700 52000 46900 52000 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 46200 51950 180.555557 text
+grestore
+57750 56450 57400 56450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(LinkAct\(0\)/MODE[0]-0) ] 0 57850 56350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+57400 56450 57200 56450 10 line
+56500 56450 56700 56450 10 line
+0.000 0.545 0.000 setrgbcolor
+57000 56350 56900 56450 10 line
+56900 56450 57000 56550 10 line
+57000 56350 57000 56550 10 line
+56900 56350 56900 56550 10 line
+56900 56450 56700 56450 10 line
+57000 56450 57200 56450 10 line
+56970 56310 56870 56210 10 line
+56870 56210 56920 56240 10 line
+56870 56210 56900 56260 10 line
+56900 56310 56800 56210 10 line
+56800 56210 56850 56240 10 line
+56800 56210 56830 56260 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false true 202.222224 [(D3) ] 0 56700 56350 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 56550 55800 56350 10 line
+55800 56350 55700 56550 10 line
+55700 56550 55600 56350 10 line
+55600 56350 55500 56550 10 line
+55900 56550 56000 56350 10 line
+56000 56350 56050 56450 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 56450 56050 56450 10 line
+55300 56450 55452 56450 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 56550 55450 56450 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R66) ] 0 55600 56650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k) ] 0 55550 56150 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 55850 57000 55650 10 line
+57000 55650 56900 55850 10 line
+56900 55850 56800 55650 10 line
+56800 55650 56700 55850 10 line
+57100 55850 57200 55650 10 line
+57200 55650 57250 55750 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 55750 57250 55750 10 line
+56500 55750 56652 55750 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 55850 56650 55750 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R67) ] 0 56800 55950 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 56750 55450 180.555557 text
+grestore
+57400 55750 57400 56450 10 line
+56500 56450 56200 56450 10 line
+56500 55750 55300 55750 10 line
+55300 55750 55300 56450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+55300 55550 55300 55750 10 line
+0.000 0.545 0.000 setrgbcolor
+55200 55550 55400 55550 10 line
+55255 55500 55345 55500 10 line
+55280 55460 55320 55460 10 line
+grestore
+57750 55050 57400 55050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(LinkAct\(1\)/MODE[1]-0) ] 0 57850 54950 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+56500 55050 56700 55050 10 line
+57400 55050 57200 55050 10 line
+0.000 0.545 0.000 setrgbcolor
+56900 55150 57000 55050 10 line
+57000 55050 56900 54950 10 line
+56900 55150 56900 54950 10 line
+57000 55150 57000 54950 10 line
+57000 55050 57200 55050 10 line
+56900 55050 56700 55050 10 line
+56930 55190 57030 55290 10 line
+57030 55290 56980 55260 10 line
+57030 55290 57000 55240 10 line
+57000 55190 57100 55290 10 line
+57100 55290 57050 55260 10 line
+57100 55290 57070 55240 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(D4) ] 0 57200 55150 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 55150 55800 54950 10 line
+55800 54950 55700 55150 10 line
+55700 55150 55600 54950 10 line
+55600 54950 55500 55150 10 line
+55900 55150 56000 54950 10 line
+56000 54950 56050 55050 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 55050 56050 55050 10 line
+55300 55050 55452 55050 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 55150 55450 55050 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R68) ] 0 55600 55250 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k) ] 0 55550 54750 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 54450 57000 54250 10 line
+57000 54250 56900 54450 10 line
+56900 54450 56800 54250 10 line
+56800 54250 56700 54450 10 line
+57100 54450 57200 54250 10 line
+57200 54250 57250 54350 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 54350 57250 54350 10 line
+56500 54350 56652 54350 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 54450 56650 54350 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R69) ] 0 56800 54550 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 56750 54050 180.555557 text
+grestore
+57400 54350 57400 55050 10 line
+56500 55050 56200 55050 10 line
+56500 54350 55300 54350 10 line
+55300 54350 55300 55050 10 line
+55000 55050 55300 55050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 54000 54950 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(Chip Mode -) ] 0 60000 55700 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(Chip mode configures the type of the two permanent ports 0 and 1.) (The Chip mode affects the number of available PDI signals. ) (We are using chip mode 10 for Port 0.) () ] 0 60000 54800 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(TX Shift -) ] 0 50800 53450 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(00 = MII TX signals not delayed) (01 = MII TX signals delayed by 10 ns) (10 = MII TX signals delayed by 20 ns) (11 = MII TX signals delayed by 30 ns) () ] 0 50800 52300 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(ASIC0 STRAPPING/LEDS) ] 0 51850 57600 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(0 = 16kbit) ] 0 60000 57400 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 46600 47400 46400 10 line
+47400 46400 47300 46600 10 line
+47300 46600 47200 46400 10 line
+47200 46400 47100 46600 10 line
+47500 46600 47600 46400 10 line
+47600 46400 47650 46500 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 46500 47650 46500 10 line
+46900 46500 47052 46500 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 46600 47050 46500 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R81) ] 0 47200 46700 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 47150 46200 180.555557 text
+grestore
+47800 46500 48000 46500 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 202.222224 [(MI_DATA-1) ] 0 49050 46400 180.555557 text
+grestore
+46700 46500 46900 46500 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 45650 46450 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 45800 47400 45600 10 line
+47400 45600 47300 45800 10 line
+47300 45800 47200 45600 10 line
+47200 45600 47100 45800 10 line
+47500 45800 47600 45600 10 line
+47600 45600 47650 45700 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 45700 47650 45700 10 line
+46900 45700 47052 45700 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 45800 47050 45700 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R82) ] 0 47200 45900 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 47150 45400 180.555557 text
+grestore
+47800 45700 48000 45700 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 202.222224 [(EEPROM_Loaded-1) ] 0 49750 45600 180.555557 text
+grestore
+46700 45700 46900 45700 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 46200 45650 180.555557 text
+grestore
+57750 47300 57400 47300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(RUN/EEPROM_SIZE-1) ] 0 57850 47200 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+57400 47300 57200 47300 10 line
+56500 47300 56700 47300 10 line
+0.000 0.545 0.000 setrgbcolor
+57000 47200 56900 47300 10 line
+56900 47300 57000 47400 10 line
+57000 47200 57000 47400 10 line
+56900 47200 56900 47400 10 line
+56900 47300 56700 47300 10 line
+57000 47300 57200 47300 10 line
+56970 47160 56870 47060 10 line
+56870 47060 56920 47090 10 line
+56870 47060 56900 47110 10 line
+56900 47160 56800 47060 10 line
+56800 47060 56850 47090 10 line
+56800 47060 56830 47110 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false true 202.222224 [(D9) ] 0 56700 47200 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 47400 55800 47200 10 line
+55800 47200 55700 47400 10 line
+55700 47400 55600 47200 10 line
+55600 47200 55500 47400 10 line
+55900 47400 56000 47200 10 line
+56000 47200 56050 47300 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 47300 56050 47300 10 line
+55300 47300 55452 47300 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 47400 55450 47300 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R89) ] 0 55600 47500 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k) ] 0 55550 47000 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 46700 57000 46500 10 line
+57000 46500 56900 46700 10 line
+56900 46700 56800 46500 10 line
+56800 46500 56700 46700 10 line
+57100 46700 57200 46500 10 line
+57200 46500 57250 46600 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 46600 57250 46600 10 line
+56500 46600 56652 46600 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 46700 56650 46600 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R90) ] 0 56800 46800 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 56750 46300 180.555557 text
+grestore
+57400 46600 57400 47300 10 line
+56500 47300 56200 47300 10 line
+56500 46600 55300 46600 10 line
+55300 46600 55300 47300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+55300 46400 55300 46600 10 line
+0.000 0.545 0.000 setrgbcolor
+55200 46400 55400 46400 10 line
+55255 46350 55345 46350 10 line
+55280 46310 55320 46310 10 line
+grestore
+48000 44100 47800 44100 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(TX_D\(0\)[1]/C25_ENA-1) ] 0 48150 44000 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 44200 47400 44000 10 line
+47400 44000 47300 44200 10 line
+47300 44200 47200 44000 10 line
+47200 44000 47100 44200 10 line
+47500 44200 47600 44000 10 line
+47600 44000 47650 44100 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 44100 47650 44100 10 line
+46900 44100 47052 44100 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 44200 47050 44100 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R84) ] 0 47200 44300 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 47150 43800 180.555557 text
+grestore
+46700 44100 46900 44100 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 45650 44050 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 45000 47400 44800 10 line
+47400 44800 47300 45000 10 line
+47300 45000 47200 44800 10 line
+47200 44800 47100 45000 10 line
+47500 45000 47600 44800 10 line
+47600 44800 47650 44900 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 44900 47650 44900 10 line
+46900 44900 47052 44900 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 45000 47050 44900 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R83) ] 0 47200 45100 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 47150 44600 180.555557 text
+grestore
+47800 44900 48000 44900 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 202.222224 [(TX_D\(0\)[0]/PHYAD_OFF-1) ] 0 50250 44800 180.555557 text
+grestore
+46700 44900 46900 44900 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 46200 44850 180.555557 text
+grestore
+57750 45900 57400 45900 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(LinkAct\(0\)/MODE[0]-1) ] 0 57850 45800 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+56500 45900 56700 45900 10 line
+57400 45900 57200 45900 10 line
+0.000 0.545 0.000 setrgbcolor
+56900 46000 57000 45900 10 line
+57000 45900 56900 45800 10 line
+56900 46000 56900 45800 10 line
+57000 46000 57000 45800 10 line
+57000 45900 57200 45900 10 line
+56900 45900 56700 45900 10 line
+56930 46040 57030 46140 10 line
+57030 46140 56980 46110 10 line
+57030 46140 57000 46090 10 line
+57000 46040 57100 46140 10 line
+57100 46140 57050 46110 10 line
+57100 46140 57070 46090 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(D10) ] 0 56500 45700 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 46000 55800 45800 10 line
+55800 45800 55700 46000 10 line
+55700 46000 55600 45800 10 line
+55600 45800 55500 46000 10 line
+55900 46000 56000 45800 10 line
+56000 45800 56050 45900 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 45900 56050 45900 10 line
+55300 45900 55452 45900 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 46000 55450 45900 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R91) ] 0 55600 46100 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k) ] 0 55550 45600 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 45300 57000 45100 10 line
+57000 45100 56900 45300 10 line
+56900 45300 56800 45100 10 line
+56800 45100 56700 45300 10 line
+57100 45300 57200 45100 10 line
+57200 45100 57250 45200 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 45200 57250 45200 10 line
+56500 45200 56652 45200 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 45300 56650 45200 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R92) ] 0 56800 45400 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 56750 44900 180.555557 text
+grestore
+57400 45200 57400 45900 10 line
+56500 45900 56200 45900 10 line
+56500 45200 55300 45200 10 line
+57750 44500 57400 44500 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(LinkAct\(1\)/MODE[1]-1) ] 0 57850 44400 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+56500 44500 56700 44500 10 line
+57400 44500 57200 44500 10 line
+0.000 0.545 0.000 setrgbcolor
+56900 44600 57000 44500 10 line
+57000 44500 56900 44400 10 line
+56900 44600 56900 44400 10 line
+57000 44600 57000 44400 10 line
+57000 44500 57200 44500 10 line
+56900 44500 56700 44500 10 line
+56930 44640 57030 44740 10 line
+57030 44740 56980 44710 10 line
+57030 44740 57000 44690 10 line
+57000 44640 57100 44740 10 line
+57100 44740 57050 44710 10 line
+57100 44740 57070 44690 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(D11) ] 0 57200 44600 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 44600 55800 44400 10 line
+55800 44400 55700 44600 10 line
+55700 44600 55600 44400 10 line
+55600 44400 55500 44600 10 line
+55900 44600 56000 44400 10 line
+56000 44400 56050 44500 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 44500 56050 44500 10 line
+55300 44500 55452 44500 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 44600 55450 44500 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R93) ] 0 55600 44700 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k) ] 0 55550 44200 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 43900 57000 43700 10 line
+57000 43700 56900 43900 10 line
+56900 43900 56800 43700 10 line
+56800 43700 56700 43900 10 line
+57100 43900 57200 43700 10 line
+57200 43700 57250 43800 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 43800 57250 43800 10 line
+56500 43800 56652 43800 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 43900 56650 43800 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R94) ] 0 56800 44000 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 56750 43500 180.555557 text
+grestore
+57400 43800 57400 44500 10 line
+56500 44500 56200 44500 10 line
+56500 43800 55300 43800 10 line
+55300 43800 55300 44500 10 line
+55000 44500 55300 44500 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 54000 44400 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(Chip Mode -) ] 0 60000 45500 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(Chip mode configures the type of the two permanent ports 0 and 1.) (The Chip mode affects the number of available PDI signals. ) (We are using chip mode 11 for Port 1.) () ] 0 60000 44500 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(TX Shift -) ] 0 50800 43250 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(00 = MII TX signals not delayed) (01 = MII TX signals delayed by 10 ns) (10 = MII TX signals delayed by 20 ns) (11 = MII TX signals delayed by 30 ns) () ] 0 50800 42100 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(ASIC1 STRAPPING/LEDS) ] 0 51850 47000 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(0 = 16kbit) ] 0 60000 47200 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(EtherCAT_ET1200_ASIC) ] 0 58900 36200 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(EtherCAT_ET1200_ASICs.sch) ] 0 58900 35900 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(1) ] 0 59400 35600 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(4) ] 0 60900 35600 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(Newell Jensen) ] 0 62900 35600 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(1) ] 0 62900 35900 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+43200 35800 45100 35800 10 line
+45100 35800 45100 37800 10 line
+45100 37800 43200 37800 10 line
+43200 37800 43200 35800 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+true false false false 202.222224 [(24LC16B) ] 0 44200 37200 180.555557 text
+grestore
+0.000 0.000 0.000 setrgbcolor
+45400 37400 45100 37400 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(A0) ] 0 45050 37400 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(1) ] 0 45200 37450 144.444443 text
+grestore
+45400 37000 45100 37000 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(A1) ] 0 45050 37000 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(2) ] 0 45200 37050 144.444443 text
+grestore
+45400 36600 45100 36600 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(A2) ] 0 45050 36600 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(3) ] 0 45200 36650 144.444443 text
+grestore
+45400 36200 45100 36200 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(GND) ] 0 45050 36200 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(4) ] 0 45200 36250 144.444443 text
+grestore
+42900 36200 43200 36200 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(SDA) ] 0 43250 36200 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(5) ] 0 43100 36250 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+43200 36550 43300 36600 10 line
+43300 36600 43200 36650 10 line
+0.000 0.000 0.000 setrgbcolor
+42900 36600 43200 36600 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(SCL) ] 0 43350 36600 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(6) ] 0 43100 36650 144.444443 text
+grestore
+42900 37000 43200 37000 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(WP) ] 0 43250 37000 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(7) ] 0 43100 37050 144.444443 text
+grestore
+42900 37400 43200 37400 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(Vcc) ] 0 43250 37400 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(8) ] 0 43100 37450 144.444443 text
+grestore
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+true false false false 202.222224 [(U6) ] 0 44200 37900 180.555557 text
+grestore
+42900 37400 42100 37400 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 41050 37350 180.555557 text
+grestore
+42900 37000 42100 37000 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 41500 36950 180.555557 text
+grestore
+42900 36600 42100 36600 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EEPROM_CLK-0) ] 0 40550 36550 180.555557 text
+grestore
+42900 36200 42100 36200 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EEPROM_DATA-0) ] 0 40450 36150 180.555557 text
+grestore
+46200 36200 45400 36200 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 46350 36150 180.555557 text
+grestore
+46200 36600 45400 36600 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 46350 36550 180.555557 text
+grestore
+46200 37000 45400 37000 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 46350 36950 180.555557 text
+grestore
+46200 37400 45400 37400 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 46350 37350 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+50250 35800 52150 35800 10 line
+52150 35800 52150 37800 10 line
+52150 37800 50250 37800 10 line
+50250 37800 50250 35800 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+true false false false 202.222224 [(24LC16B) ] 0 51250 37200 180.555557 text
+grestore
+0.000 0.000 0.000 setrgbcolor
+52450 37400 52150 37400 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(A0) ] 0 52100 37400 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(1) ] 0 52250 37450 144.444443 text
+grestore
+52450 37000 52150 37000 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(A1) ] 0 52100 37000 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(2) ] 0 52250 37050 144.444443 text
+grestore
+52450 36600 52150 36600 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(A2) ] 0 52100 36600 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(3) ] 0 52250 36650 144.444443 text
+grestore
+52450 36200 52150 36200 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false true true false 202.222224 [(GND) ] 0 52100 36200 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 161.777776 [(4) ] 0 52250 36250 144.444443 text
+grestore
+49950 36200 50250 36200 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(SDA) ] 0 50300 36200 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(5) ] 0 50150 36250 144.444443 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+50250 36550 50350 36600 10 line
+50350 36600 50250 36650 10 line
+0.000 0.000 0.000 setrgbcolor
+49950 36600 50250 36600 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(SCL) ] 0 50400 36600 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(6) ] 0 50150 36650 144.444443 text
+grestore
+49950 37000 50250 37000 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(WP) ] 0 50300 37000 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(7) ] 0 50150 37050 144.444443 text
+grestore
+49950 37400 50250 37400 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false true false 202.222224 [(Vcc) ] 0 50300 37400 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 161.777776 [(8) ] 0 50150 37450 144.444443 text
+grestore
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+true false false false 202.222224 [(U7) ] 0 51250 37900 180.555557 text
+grestore
+49950 37400 49150 37400 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 48100 37350 180.555557 text
+grestore
+49950 37000 49150 37000 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 48550 36950 180.555557 text
+grestore
+49950 36200 49150 36200 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EEPROM_DATA-1) ] 0 47500 36150 180.555557 text
+grestore
+49950 36600 49150 36600 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EEPROM_CLK-1) ] 0 47600 36550 180.555557 text
+grestore
+53250 36200 52450 36200 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 53400 36150 180.555557 text
+grestore
+53250 36600 52450 36600 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 53400 36550 180.555557 text
+grestore
+53250 37000 52450 37000 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 53400 36950 180.555557 text
+grestore
+53250 37400 52450 37400 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 53400 37350 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(EEPROM CONNECTION) ] 0 46650 38300 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+35000 37300 35200 37300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 202.222224 [(1) ] 0 35150 37350 180.555557 text
+grestore
+35500 37300 35700 37300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(3) ] 0 35550 37350 180.555557 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+35250 37200 35450 37200 10 line
+35450 37200 35450 37400 10 line
+35450 37400 35250 37400 10 line
+35250 37400 35250 37200 10 line
+35200 37440 35200 37160 10 line
+35500 37440 35500 37160 10 line
+0.000 0.000 0.000 setrgbcolor
+35200 36800 35200 37100 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false true 202.222224 [(2) ] 0 35250 37050 180.555557 text
+grestore
+35500 36800 35500 37100 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false true 202.222224 [(4) ] 0 35550 37050 180.555557 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+35100 37200 35100 37100 10 line
+35100 37100 35600 37100 10 line
+35600 37100 35600 37200 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(X1) ] 0 35200 37500 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(25 MHz) ] 0 35050 37700 180.555557 text
+grestore
+35500 36800 35500 36650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 35400 36400 180.555557 text
+grestore
+35000 37300 34400 37300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(OSC_IN-0) ] 0 34100 37450 180.555557 text
+grestore
+35700 37300 36350 37300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(OSC_OUT-0) ] 0 35800 37450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+34400 37000 34400 36800 10 line
+34400 36100 34400 36300 10 line
+0.000 0.545 0.000 setrgbcolor
+34600 36600 34200 36600 10 line
+34600 36500 34200 36500 10 line
+34400 36300 34400 36500 10 line
+34400 36600 34400 36800 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(C50) ] 0 34550 36700 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(30pF) ] 0 33900 36700 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+36350 37050 36350 36850 10 line
+36350 36150 36350 36350 10 line
+0.000 0.545 0.000 setrgbcolor
+36550 36650 36150 36650 10 line
+36550 36550 36150 36550 10 line
+36350 36350 36350 36550 10 line
+36350 36650 36350 36850 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(C51) ] 0 36450 36750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(30pF) ] 0 35850 36750 180.555557 text
+grestore
+34400 37300 34400 37000 10 line
+36350 37300 36350 37050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+34400 35750 34400 35950 10 line
+0.000 0.545 0.000 setrgbcolor
+34300 35750 34500 35750 10 line
+34355 35700 34445 35700 10 line
+34380 35660 34420 35660 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+36350 35750 36350 35950 10 line
+0.000 0.545 0.000 setrgbcolor
+36250 35750 36450 35750 10 line
+36305 35700 36395 35700 10 line
+36330 35660 36370 35660 10 line
+grestore
+34400 35950 34400 36100 10 line
+36350 35950 36350 36150 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(CLOCK DISTRIBUTION) ] 0 36200 38000 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+45500 49250 45300 49350 10 line
+45300 49350 45500 49450 10 line
+45500 49450 45300 49550 10 line
+45300 49550 45500 49650 10 line
+45500 49250 45300 49150 10 line
+45300 49150 45400 49100 10 line
+0.000 0.000 0.000 setrgbcolor
+45400 48950 45400 49100 10 line
+45400 49850 45400 49698 10 line
+0.000 0.545 0.000 setrgbcolor
+45500 49649 45400 49700 10 line
+0.627 0.125 0.941 setrgbcolor
+newpath
+45400 49850
+25
+0 360 arc
+fill
+newpath
+45400 49850
+25
+0 360 arc
+fill
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R78) ] 0 45600 49450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(49.9) ] 0 45550 49200 180.555557 text
+grestore
+46250 47950 44600 47950 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EBUS\(1\)-RX-) ] 0 46350 47850 180.555557 text
+grestore
+46250 49850 44600 49850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EBUS\(1\)-RX+) ] 0 46350 49750 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+48800 49250 48600 49350 10 line
+48600 49350 48800 49450 10 line
+48800 49450 48600 49550 10 line
+48600 49550 48800 49650 10 line
+48800 49250 48600 49150 10 line
+48600 49150 48700 49100 10 line
+0.000 0.000 0.000 setrgbcolor
+48700 48950 48700 49100 10 line
+48700 49850 48700 49698 10 line
+0.000 0.545 0.000 setrgbcolor
+48800 49649 48700 49700 10 line
+0.627 0.125 0.941 setrgbcolor
+newpath
+48700 49850
+25
+0 360 arc
+fill
+newpath
+48700 49850
+25
+0 360 arc
+fill
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R119) ] 0 48900 49450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(49.9) ] 0 48850 49200 180.555557 text
+grestore
+49550 47950 47900 47950 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EBUS\(1\)-TX-) ] 0 49650 47850 180.555557 text
+grestore
+49550 49850 47900 49850 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(EBUS\(1\)-TX+) ] 0 49650 49750 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(LVDS CONNECTION) ] 0 46900 50200 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 51400 47400 51200 10 line
+47400 51200 47300 51400 10 line
+47300 51400 47200 51200 10 line
+47200 51200 47100 51400 10 line
+47500 51400 47600 51200 10 line
+47600 51200 47650 51300 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 51300 47650 51300 10 line
+46900 51300 47052 51300 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 51400 47050 51300 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R63) ] 0 47200 51500 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k \(optional\)) ] 0 47250 51000 180.555557 text
+grestore
+46700 51300 46900 51300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 45650 51250 180.555557 text
+grestore
+47800 51300 47900 51300 10 line
+47900 51300 47900 52000 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 52900 47400 52700 10 line
+47400 52700 47300 52900 10 line
+47300 52900 47200 52700 10 line
+47200 52700 47100 52900 10 line
+47500 52900 47600 52700 10 line
+47600 52700 47650 52800 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 52800 47650 52800 10 line
+46900 52800 47052 52800 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 52900 47050 52800 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R61) ] 0 47200 53000 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k \(optional\)) ] 0 47250 52500 180.555557 text
+grestore
+46700 52800 46900 52800 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 45650 52750 180.555557 text
+grestore
+47800 52800 47900 52800 10 line
+47900 52800 47900 53500 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(PHY Address Offset is Zero) ] 0 50800 55000 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(Enable 25 MHz Clock Output To PHY) ] 0 50800 54200 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(PHY Address Offset is Zero) ] 0 50800 44800 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(Enable 25 MHz Clock Output To PHY) ] 0 50800 44000 180.555557 text
+grestore
+57750 50600 57400 50600 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(PERR\(1\)/CLK_MODE[1]-0) ] 0 57850 50500 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+57400 50600 57200 50600 10 line
+56500 50600 56700 50600 10 line
+0.000 0.545 0.000 setrgbcolor
+57000 50500 56900 50600 10 line
+56900 50600 57000 50700 10 line
+57000 50500 57000 50700 10 line
+56900 50500 56900 50700 10 line
+56900 50600 56700 50600 10 line
+57000 50600 57200 50600 10 line
+56970 50460 56870 50360 10 line
+56870 50360 56920 50390 10 line
+56870 50360 56900 50410 10 line
+56900 50460 56800 50360 10 line
+56800 50360 56850 50390 10 line
+56800 50360 56830 50410 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false true 202.222224 [(D7) ] 0 56700 50500 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 50700 55800 50500 10 line
+55800 50500 55700 50700 10 line
+55700 50700 55600 50500 10 line
+55600 50500 55500 50700 10 line
+55900 50700 56000 50500 10 line
+56000 50500 56050 50600 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 50600 56050 50600 10 line
+55300 50600 55452 50600 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 50700 55450 50600 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R74) ] 0 55600 50800 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k) ] 0 55550 50300 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 50050 57000 49850 10 line
+57000 49850 56900 50050 10 line
+56900 50050 56800 49850 10 line
+56800 49850 56700 50050 10 line
+57100 50050 57200 49850 10 line
+57200 49850 57250 49950 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 49950 57250 49950 10 line
+56500 49950 56652 49950 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 50050 56650 49950 10 line
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 49950
+25
+0 360 arc
+fill
+newpath
+57400 49950
+25
+0 360 arc
+fill
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R75) ] 0 56800 50150 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 56750 49650 180.555557 text
+grestore
+57400 48400 57400 50600 10 line
+56500 50600 56200 50600 10 line
+56500 49950 55000 49950 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 54500 49850 180.555557 text
+grestore
+57750 53650 57400 53650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(PERR\(0\)/CLK_MODE[0]-0) ] 0 57850 53550 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+56500 53650 56700 53650 10 line
+57400 53650 57200 53650 10 line
+0.000 0.545 0.000 setrgbcolor
+56900 53750 57000 53650 10 line
+57000 53650 56900 53550 10 line
+56900 53750 56900 53550 10 line
+57000 53750 57000 53550 10 line
+57000 53650 57200 53650 10 line
+56900 53650 56700 53650 10 line
+56930 53790 57030 53890 10 line
+57030 53890 56980 53860 10 line
+57030 53890 57000 53840 10 line
+57000 53790 57100 53890 10 line
+57100 53890 57050 53860 10 line
+57100 53890 57070 53840 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(D5) ] 0 57200 53750 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 53750 55800 53550 10 line
+55800 53550 55700 53750 10 line
+55700 53750 55600 53550 10 line
+55600 53550 55500 53750 10 line
+55900 53750 56000 53550 10 line
+56000 53550 56050 53650 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 53650 56050 53650 10 line
+55300 53650 55452 53650 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 53750 55450 53650 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R70) ] 0 55600 53850 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k) ] 0 55550 53350 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 53100 57000 52900 10 line
+57000 52900 56900 53100 10 line
+56900 53100 56800 52900 10 line
+56800 52900 56700 53100 10 line
+57100 53100 57200 52900 10 line
+57200 52900 57250 53000 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 53000 57250 53000 10 line
+56500 53000 56652 53000 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 53100 56650 53000 10 line
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 53000
+25
+0 360 arc
+fill
+newpath
+57400 53000
+25
+0 360 arc
+fill
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R71) ] 0 56800 53200 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 56750 52700 180.555557 text
+grestore
+57400 51450 57400 53650 10 line
+56500 53650 56200 53650 10 line
+56500 53000 55000 53000 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 54000 52900 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(CPU_CLK Mode -) ] 0 60500 51100 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(00 = off) (01 = 25 MHz clock output at PDI[7]/CPU_CLK) (10 = 20 MHz clock output at PDI[7]/CPU_CLK) (11 = 10 MHz clock output at PDI[7]/CPU_CLK) (We are using mode 01.) ] 0 60500 50000 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 43400 47400 43200 10 line
+47400 43200 47300 43400 10 line
+47300 43400 47200 43200 10 line
+47200 43200 47100 43400 10 line
+47500 43400 47600 43200 10 line
+47600 43200 47650 43300 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 43300 47650 43300 10 line
+46900 43300 47052 43300 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 43400 47050 43300 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R85) ] 0 47200 43500 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 47150 43000 180.555557 text
+grestore
+47800 43300 48000 43300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 202.222224 [(TX_D\(0\)[2]/C25_SHI[0]-1) ] 0 50150 43200 180.555557 text
+grestore
+46700 43300 46900 43300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 46200 43250 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 41900 47400 41700 10 line
+47400 41700 47300 41900 10 line
+47300 41900 47200 41700 10 line
+47200 41700 47100 41900 10 line
+47500 41900 47600 41700 10 line
+47600 41700 47650 41800 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 41800 47650 41800 10 line
+46900 41800 47052 41800 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 41900 47050 41800 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R87) ] 0 47200 42000 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 47150 41500 180.555557 text
+grestore
+47800 41800 48000 41800 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 202.222224 [(TX_D\(0\)[3]/C25_SHI[1]-1) ] 0 50150 41700 180.555557 text
+grestore
+46700 41800 46900 41800 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 46200 41750 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 41200 47400 41000 10 line
+47400 41000 47300 41200 10 line
+47300 41200 47200 41000 10 line
+47200 41000 47100 41200 10 line
+47500 41200 47600 41000 10 line
+47600 41000 47650 41100 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 41100 47650 41100 10 line
+46900 41100 47052 41100 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 41200 47050 41100 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R88) ] 0 47200 41300 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k \(optional\)) ] 0 47250 40800 180.555557 text
+grestore
+46700 41100 46900 41100 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 45650 41050 180.555557 text
+grestore
+47800 41100 47900 41100 10 line
+47900 41100 47900 41800 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+47500 42700 47400 42500 10 line
+47400 42500 47300 42700 10 line
+47300 42700 47200 42500 10 line
+47200 42500 47100 42700 10 line
+47500 42700 47600 42500 10 line
+47600 42500 47650 42600 10 line
+0.000 0.000 0.000 setrgbcolor
+47800 42600 47650 42600 10 line
+46900 42600 47052 42600 10 line
+0.000 0.545 0.000 setrgbcolor
+47101 42700 47050 42600 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R86) ] 0 47200 42800 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k \(optional\)) ] 0 47250 42300 180.555557 text
+grestore
+46700 42600 46900 42600 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 45650 42550 180.555557 text
+grestore
+47800 42600 47900 42600 10 line
+47900 42600 47900 43300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+38150 37300 38350 37300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false false 202.222224 [(1) ] 0 38300 37350 180.555557 text
+grestore
+38650 37300 38850 37300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(3) ] 0 38700 37350 180.555557 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+38400 37200 38600 37200 10 line
+38600 37200 38600 37400 10 line
+38600 37400 38400 37400 10 line
+38400 37400 38400 37200 10 line
+38350 37440 38350 37160 10 line
+38650 37440 38650 37160 10 line
+0.000 0.000 0.000 setrgbcolor
+38350 36800 38350 37100 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false true 202.222224 [(2) ] 0 38400 37050 180.555557 text
+grestore
+38650 36800 38650 37100 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false true 202.222224 [(4) ] 0 38700 37050 180.555557 text
+grestore
+0.000 0.545 0.000 setrgbcolor
+38250 37200 38250 37100 10 line
+38250 37100 38750 37100 10 line
+38750 37100 38750 37200 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(X2) ] 0 38350 37500 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(25 MHz) ] 0 38200 37700 180.555557 text
+grestore
+38350 36800 38350 36650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 38000 36400 180.555557 text
+grestore
+38650 36800 38650 36650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 38550 36400 180.555557 text
+grestore
+38150 37300 37550 37300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(OSC_IN-1) ] 0 37250 37450 180.555557 text
+grestore
+38850 37300 39500 37300 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(OSC_OUT-1) ] 0 38950 37450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+37550 37000 37550 36800 10 line
+37550 36100 37550 36300 10 line
+0.000 0.545 0.000 setrgbcolor
+37750 36600 37350 36600 10 line
+37750 36500 37350 36500 10 line
+37550 36300 37550 36500 10 line
+37550 36600 37550 36800 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(C52) ] 0 37700 36700 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(30pF) ] 0 37050 36700 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+39500 37050 39500 36850 10 line
+39500 36150 39500 36350 10 line
+0.000 0.545 0.000 setrgbcolor
+39700 36650 39300 36650 10 line
+39700 36550 39300 36550 10 line
+39500 36350 39500 36550 10 line
+39500 36650 39500 36850 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(C53) ] 0 39600 36750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(30pF) ] 0 39000 36750 180.555557 text
+grestore
+37550 37300 37550 37000 10 line
+39500 37300 39500 37050 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+37550 35750 37550 35950 10 line
+0.000 0.545 0.000 setrgbcolor
+37450 35750 37650 35750 10 line
+37505 35700 37595 35700 10 line
+37530 35660 37570 35660 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+39500 35750 39500 35950 10 line
+0.000 0.545 0.000 setrgbcolor
+39400 35750 39600 35750 10 line
+39455 35700 39545 35700 10 line
+39480 35660 39520 35660 10 line
+grestore
+37550 35950 37550 36100 10 line
+39500 35950 39500 36150 10 line
+55000 53650 55300 53650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 54000 53550 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(NOTE: MAKE SURE RESISTORS ARE THE CORRECT TYPE FOR DIODES YOU BUY!!!) ] 0 58200 48450 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 51550 57000 51350 10 line
+57000 51350 56900 51550 10 line
+56900 51550 56800 51350 10 line
+56800 51350 56700 51550 10 line
+57100 51550 57200 51350 10 line
+57200 51350 57250 51450 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 51450 57250 51450 10 line
+56500 51450 56652 51450 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 51550 56650 51450 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R73) ] 0 56800 51650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k \(optional\)) ] 0 56250 51150 180.555557 text
+grestore
+56500 51450 55000 51450 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 54450 51350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+57400 52200 57200 52200 10 line
+56500 52200 56700 52200 10 line
+0.000 0.545 0.000 setrgbcolor
+57000 52100 56900 52200 10 line
+56900 52200 57000 52300 10 line
+57000 52100 57000 52300 10 line
+56900 52100 56900 52300 10 line
+56900 52200 56700 52200 10 line
+57000 52200 57200 52200 10 line
+56970 52060 56870 51960 10 line
+56870 51960 56920 51990 10 line
+56870 51960 56900 52010 10 line
+56900 52060 56800 51960 10 line
+56800 51960 56850 51990 10 line
+56800 51960 56830 52010 10 line
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 52200
+25
+0 360 arc
+fill
+newpath
+57400 52200
+25
+0 360 arc
+fill
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false true 202.222224 [(D6) ] 0 56700 52100 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(\(optional\)) ] 0 56500 52350 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 52300 55800 52100 10 line
+55800 52100 55700 52300 10 line
+55700 52300 55600 52100 10 line
+55600 52100 55500 52300 10 line
+55900 52300 56000 52100 10 line
+56000 52100 56050 52200 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 52200 56050 52200 10 line
+55300 52200 55452 52200 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 52300 55450 52200 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R72) ] 0 55600 52400 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k \(optional\)) ] 0 55200 51900 180.555557 text
+grestore
+56500 52200 56200 52200 10 line
+55000 52200 55300 52200 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 54500 52100 180.555557 text
+grestore
+55000 50600 55300 50600 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 54500 50500 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+56500 49150 56700 49150 10 line
+57400 49150 57200 49150 10 line
+0.000 0.545 0.000 setrgbcolor
+56900 49250 57000 49150 10 line
+57000 49150 56900 49050 10 line
+56900 49250 56900 49050 10 line
+57000 49250 57000 49050 10 line
+57000 49150 57200 49150 10 line
+56900 49150 56700 49150 10 line
+56930 49290 57030 49390 10 line
+57030 49390 56980 49360 10 line
+57030 49390 57000 49340 10 line
+57000 49290 57100 49390 10 line
+57100 49390 57050 49360 10 line
+57100 49390 57070 49340 10 line
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 49150
+25
+0 360 arc
+fill
+newpath
+57400 49150
+25
+0 360 arc
+fill
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(D8) ] 0 57200 49250 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(\(optional\)) ] 0 56550 48850 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 49250 55800 49050 10 line
+55800 49050 55700 49250 10 line
+55700 49250 55600 49050 10 line
+55600 49050 55500 49250 10 line
+55900 49250 56000 49050 10 line
+56000 49050 56050 49150 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 49150 56050 49150 10 line
+55300 49150 55452 49150 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 49250 55450 49150 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R76) ] 0 55600 49350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k \(optional\)) ] 0 55200 48850 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 48500 57000 48300 10 line
+57000 48300 56900 48500 10 line
+56900 48500 56800 48300 10 line
+56800 48300 56700 48500 10 line
+57100 48500 57200 48300 10 line
+57200 48300 57250 48400 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 48400 57250 48400 10 line
+56500 48400 56652 48400 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 48500 56650 48400 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R77) ] 0 56800 48600 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k \(optional\)) ] 0 56250 48100 180.555557 text
+grestore
+56500 49150 56200 49150 10 line
+56500 48400 55000 48400 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 54000 48300 180.555557 text
+grestore
+55000 49150 55300 49150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 54000 49050 180.555557 text
+grestore
+55000 45900 55300 45900 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 54000 45800 180.555557 text
+grestore
+55300 45200 55300 45900 10 line
+57750 40150 57400 40150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(PERR\(1\)/CLK_MODE[1]-1) ] 0 57850 40050 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+57400 40150 57200 40150 10 line
+56500 40150 56700 40150 10 line
+0.000 0.545 0.000 setrgbcolor
+57000 40050 56900 40150 10 line
+56900 40150 57000 40250 10 line
+57000 40050 57000 40250 10 line
+56900 40050 56900 40250 10 line
+56900 40150 56700 40150 10 line
+57000 40150 57200 40150 10 line
+56970 40010 56870 39910 10 line
+56870 39910 56920 39940 10 line
+56870 39910 56900 39960 10 line
+56900 40010 56800 39910 10 line
+56800 39910 56850 39940 10 line
+56800 39910 56830 39960 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false true 202.222224 [(D14) ] 0 56700 40050 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 40250 55800 40050 10 line
+55800 40050 55700 40250 10 line
+55700 40250 55600 40050 10 line
+55600 40050 55500 40250 10 line
+55900 40250 56000 40050 10 line
+56000 40050 56050 40150 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 40150 56050 40150 10 line
+55300 40150 55452 40150 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 40250 55450 40150 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R99) ] 0 55600 40350 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k) ] 0 55550 39850 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 39600 57000 39400 10 line
+57000 39400 56900 39600 10 line
+56900 39600 56800 39400 10 line
+56800 39400 56700 39600 10 line
+57100 39600 57200 39400 10 line
+57200 39400 57250 39500 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 39500 57250 39500 10 line
+56500 39500 56652 39500 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 39600 56650 39500 10 line
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 39500
+25
+0 360 arc
+fill
+newpath
+57400 39500
+25
+0 360 arc
+fill
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R100) ] 0 56800 39700 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 56750 39200 180.555557 text
+grestore
+57400 37950 57400 40150 10 line
+56500 40150 56200 40150 10 line
+56500 39500 55000 39500 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 54500 39400 180.555557 text
+grestore
+57750 43200 57400 43200 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(PERR\(0\)/CLK_MODE[0]-1) ] 0 57850 43100 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+56500 43200 56700 43200 10 line
+57400 43200 57200 43200 10 line
+0.000 0.545 0.000 setrgbcolor
+56900 43300 57000 43200 10 line
+57000 43200 56900 43100 10 line
+56900 43300 56900 43100 10 line
+57000 43300 57000 43100 10 line
+57000 43200 57200 43200 10 line
+56900 43200 56700 43200 10 line
+56930 43340 57030 43440 10 line
+57030 43440 56980 43410 10 line
+57030 43440 57000 43390 10 line
+57000 43340 57100 43440 10 line
+57100 43440 57050 43410 10 line
+57100 43440 57070 43390 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(D12) ] 0 57200 43300 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 43300 55800 43100 10 line
+55800 43100 55700 43300 10 line
+55700 43300 55600 43100 10 line
+55600 43100 55500 43300 10 line
+55900 43300 56000 43100 10 line
+56000 43100 56050 43200 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 43200 56050 43200 10 line
+55300 43200 55452 43200 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 43300 55450 43200 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R95) ] 0 55600 43400 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k) ] 0 55550 42900 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 42650 57000 42450 10 line
+57000 42450 56900 42650 10 line
+56900 42650 56800 42450 10 line
+56800 42450 56700 42650 10 line
+57100 42650 57200 42450 10 line
+57200 42450 57250 42550 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 42550 57250 42550 10 line
+56500 42550 56652 42550 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 42650 56650 42550 10 line
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 42550
+25
+0 360 arc
+fill
+newpath
+57400 42550
+25
+0 360 arc
+fill
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R96) ] 0 56800 42750 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k) ] 0 56750 42250 180.555557 text
+grestore
+57400 41000 57400 43200 10 line
+56500 43200 56200 43200 10 line
+56500 42550 55000 42550 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 54000 42450 180.555557 text
+grestore
+55000 43200 55300 43200 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 54000 43100 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 41100 57000 40900 10 line
+57000 40900 56900 41100 10 line
+56900 41100 56800 40900 10 line
+56800 40900 56700 41100 10 line
+57100 41100 57200 40900 10 line
+57200 40900 57250 41000 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 41000 57250 41000 10 line
+56500 41000 56652 41000 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 41100 56650 41000 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R98) ] 0 56800 41200 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k \(optional\)) ] 0 56250 40700 180.555557 text
+grestore
+56500 41000 55000 41000 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 54450 40900 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+57400 41750 57200 41750 10 line
+56500 41750 56700 41750 10 line
+0.000 0.545 0.000 setrgbcolor
+57000 41650 56900 41750 10 line
+56900 41750 57000 41850 10 line
+57000 41650 57000 41850 10 line
+56900 41650 56900 41850 10 line
+56900 41750 56700 41750 10 line
+57000 41750 57200 41750 10 line
+56970 41610 56870 41510 10 line
+56870 41510 56920 41540 10 line
+56870 41510 56900 41560 10 line
+56900 41610 56800 41510 10 line
+56800 41510 56850 41540 10 line
+56800 41510 56830 41560 10 line
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 41750
+25
+0 360 arc
+fill
+newpath
+57400 41750
+25
+0 360 arc
+fill
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false true false true 202.222224 [(D13) ] 0 56700 41650 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(\(optional\)) ] 0 56500 41900 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 41850 55800 41650 10 line
+55800 41650 55700 41850 10 line
+55700 41850 55600 41650 10 line
+55600 41650 55500 41850 10 line
+55900 41850 56000 41650 10 line
+56000 41650 56050 41750 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 41750 56050 41750 10 line
+55300 41750 55452 41750 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 41850 55450 41750 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R97) ] 0 55600 41950 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k \(optional\)) ] 0 55200 41450 180.555557 text
+grestore
+56500 41750 56200 41750 10 line
+55000 41750 55300 41750 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 54500 41650 180.555557 text
+grestore
+55000 40150 55300 40150 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 54500 40050 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+56500 38700 56700 38700 10 line
+57400 38700 57200 38700 10 line
+0.000 0.545 0.000 setrgbcolor
+56900 38800 57000 38700 10 line
+57000 38700 56900 38600 10 line
+56900 38800 56900 38600 10 line
+57000 38800 57000 38600 10 line
+57000 38700 57200 38700 10 line
+56900 38700 56700 38700 10 line
+56930 38840 57030 38940 10 line
+57030 38940 56980 38910 10 line
+57030 38940 57000 38890 10 line
+57000 38840 57100 38940 10 line
+57100 38940 57050 38910 10 line
+57100 38940 57070 38890 10 line
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 38700
+25
+0 360 arc
+fill
+newpath
+57400 38700
+25
+0 360 arc
+fill
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(D15) ] 0 57200 38800 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(\(optional\)) ] 0 56550 38400 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+55900 38800 55800 38600 10 line
+55800 38600 55700 38800 10 line
+55700 38800 55600 38600 10 line
+55600 38600 55500 38800 10 line
+55900 38800 56000 38600 10 line
+56000 38600 56050 38700 10 line
+0.000 0.000 0.000 setrgbcolor
+56200 38700 56050 38700 10 line
+55300 38700 55452 38700 10 line
+0.000 0.545 0.000 setrgbcolor
+55501 38800 55450 38700 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R101) ] 0 55600 38900 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(1.2k \(optional\)) ] 0 55200 38400 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+57100 38050 57000 37850 10 line
+57000 37850 56900 38050 10 line
+56900 38050 56800 37850 10 line
+56800 37850 56700 38050 10 line
+57100 38050 57200 37850 10 line
+57200 37850 57250 37950 10 line
+0.000 0.000 0.000 setrgbcolor
+57400 37950 57250 37950 10 line
+56500 37950 56652 37950 10 line
+0.000 0.545 0.000 setrgbcolor
+56701 38050 56650 37950 10 line
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R102) ] 0 56800 38150 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(4.7k \(optional\)) ] 0 56250 37650 180.555557 text
+grestore
+56500 38700 56200 38700 10 line
+56500 37950 55000 37950 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 54000 37850 180.555557 text
+grestore
+55000 38700 55300 38700 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(VCC \(3.3V\)) ] 0 54000 38600 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(CPU_CLK Mode -) ] 0 60500 40650 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(00 = off) (01 = 25 MHz clock output at PDI[7]/CPU_CLK) (10 = 20 MHz clock output at PDI[7]/CPU_CLK) (11 = 10 MHz clock output at PDI[7]/CPU_CLK) (We are using mode 01.) ] 0 60500 39550 180.555557 text
+grestore
+35200 36800 35200 36650 10 line
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(GND) ] 0 34900 36400 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+45500 48250 45300 48350 10 line
+45300 48350 45500 48450 10 line
+45500 48450 45300 48550 10 line
+45300 48550 45500 48650 10 line
+45500 48250 45300 48150 10 line
+45300 48150 45400 48100 10 line
+0.000 0.000 0.000 setrgbcolor
+45400 47950 45400 48100 10 line
+45400 48850 45400 48698 10 line
+0.000 0.545 0.000 setrgbcolor
+45500 48649 45400 48700 10 line
+0.627 0.125 0.941 setrgbcolor
+newpath
+45400 47950
+25
+0 360 arc
+fill
+newpath
+45400 47950
+25
+0 360 arc
+fill
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R79) ] 0 45600 48450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(49.9) ] 0 45550 48200 180.555557 text
+grestore
+45400 48950 45400 48850 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+48800 48250 48600 48350 10 line
+48600 48350 48800 48450 10 line
+48800 48450 48600 48550 10 line
+48600 48550 48800 48650 10 line
+48800 48250 48600 48150 10 line
+48600 48150 48700 48100 10 line
+0.000 0.000 0.000 setrgbcolor
+48700 47950 48700 48100 10 line
+48700 48850 48700 48698 10 line
+0.000 0.545 0.000 setrgbcolor
+48800 48649 48700 48700 10 line
+0.627 0.125 0.941 setrgbcolor
+newpath
+48700 47950
+25
+0 360 arc
+fill
+newpath
+48700 47950
+25
+0 360 arc
+fill
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(R120) ] 0 48900 48450 180.555557 text
+grestore
+gsave
+0.000 0.000 0.000 setrgbcolor
+false false false false 202.222224 [(49.9) ] 0 48850 48200 180.555557 text
+grestore
+48700 48950 48700 48850 10 line
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(Using LED on RJ45 Conn0) ] 0 56300 58100 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(Using LED on RJ45 Conn0) ] 0 56300 56600 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(Using LED on RJ45 Conn1) ] 0 56300 47500 180.555557 text
+grestore
+gsave
+0.000 0.545 0.000 setrgbcolor
+false false false false 202.222224 [(Using LED on RJ45 Conn1) ] 0 56300 46100 180.555557 text
+grestore
+1.000 0.000 0.000 setrgbcolor
+60 60 35720 51020 fbox
+60 60 35720 50620 fbox
+60 60 35720 51420 fbox
+60 60 35720 51820 fbox
+60 60 35720 52620 fbox
+60 60 35720 54020 fbox
+60 60 35720 56220 fbox
+60 60 35720 56420 fbox
+60 60 35720 56620 fbox
+60 60 35720 56820 fbox
+60 60 35720 57020 fbox
+60 60 35720 57220 fbox
+60 60 35720 57420 fbox
+60 60 35720 57620 fbox
+60 60 41320 57620 fbox
+60 60 41320 57420 fbox
+60 60 41320 57220 fbox
+60 60 41320 57020 fbox
+60 60 41320 56820 fbox
+60 60 41320 56020 fbox
+60 60 41320 55820 fbox
+60 60 41320 55620 fbox
+60 60 41320 55420 fbox
+60 60 41320 54620 fbox
+60 60 41320 54420 fbox
+60 60 41320 54220 fbox
+60 60 41320 54020 fbox
+60 60 41320 53820 fbox
+60 60 41320 53620 fbox
+60 60 41320 53420 fbox
+60 60 41320 53220 fbox
+60 60 41320 52020 fbox
+60 60 41320 51820 fbox
+60 60 41320 51020 fbox
+60 60 41320 50820 fbox
+60 60 41320 50620 fbox
+60 60 41320 50420 fbox
+60 60 41320 50220 fbox
+60 60 41320 50020 fbox
+60 60 41320 49820 fbox
+60 60 41320 49620 fbox
+60 60 41320 49220 fbox
+60 60 35720 52820 fbox
+60 60 41320 49420 fbox
+60 60 41320 52220 fbox
+60 60 41320 52420 fbox
+60 60 35720 53620 fbox
+60 60 35720 40720 fbox
+60 60 35720 40320 fbox
+60 60 35720 41120 fbox
+60 60 35720 41520 fbox
+60 60 35720 42320 fbox
+60 60 35720 43720 fbox
+60 60 35720 45920 fbox
+60 60 35720 46120 fbox
+60 60 35720 46320 fbox
+60 60 35720 46520 fbox
+60 60 35720 46720 fbox
+60 60 35720 46920 fbox
+60 60 35720 47120 fbox
+60 60 35720 47320 fbox
+60 60 41320 47320 fbox
+60 60 41320 47120 fbox
+60 60 41320 46920 fbox
+60 60 41320 46720 fbox
+60 60 41320 46520 fbox
+60 60 41320 45720 fbox
+60 60 41320 45520 fbox
+60 60 41320 45320 fbox
+60 60 41320 45120 fbox
+60 60 41320 44320 fbox
+60 60 41320 44120 fbox
+60 60 41320 43920 fbox
+60 60 41320 43720 fbox
+60 60 41320 43520 fbox
+60 60 41320 43320 fbox
+60 60 41320 43120 fbox
+60 60 41320 42920 fbox
+60 60 41320 41720 fbox
+60 60 41320 41520 fbox
+60 60 41320 40720 fbox
+60 60 41320 40520 fbox
+60 60 41320 40320 fbox
+60 60 41320 40120 fbox
+60 60 41320 39920 fbox
+60 60 41320 39720 fbox
+60 60 41320 39520 fbox
+60 60 41320 39320 fbox
+60 60 41320 38920 fbox
+60 60 35720 42520 fbox
+60 60 41320 39120 fbox
+60 60 41320 41920 fbox
+60 60 41320 42120 fbox
+60 60 35720 43320 fbox
+60 60 47970 56670 fbox
+60 60 46670 56670 fbox
+60 60 47970 55870 fbox
+60 60 46670 55870 fbox
+60 60 57720 57820 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 57850
+25
+0 360 arc
+fill
+newpath
+57400 57850
+25
+0 360 arc
+fill
+newpath
+55300 57150
+25
+0 360 arc
+fill
+newpath
+55300 57150
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 47970 54270 fbox
+60 60 46670 54270 fbox
+60 60 47970 55070 fbox
+60 60 46670 55070 fbox
+60 60 47970 53470 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+47900 53500
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 46670 53470 fbox
+60 60 47970 51970 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+47900 52000
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 46670 51970 fbox
+60 60 57720 56420 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 56450
+25
+0 360 arc
+fill
+newpath
+57400 56450
+25
+0 360 arc
+fill
+newpath
+55300 55750
+25
+0 360 arc
+fill
+newpath
+55300 55750
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 57720 55020 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 55050
+25
+0 360 arc
+fill
+newpath
+57400 55050
+25
+0 360 arc
+fill
+newpath
+55300 55050
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 54970 55020 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+55300 55050
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 47970 46470 fbox
+60 60 46670 46470 fbox
+60 60 47970 45670 fbox
+60 60 46670 45670 fbox
+60 60 57720 47270 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 47300
+25
+0 360 arc
+fill
+newpath
+57400 47300
+25
+0 360 arc
+fill
+newpath
+55300 46600
+25
+0 360 arc
+fill
+newpath
+55300 46600
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 47970 44070 fbox
+60 60 46670 44070 fbox
+60 60 47970 44870 fbox
+60 60 46670 44870 fbox
+60 60 57720 45870 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 45900
+25
+0 360 arc
+fill
+newpath
+57400 45900
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 57720 44470 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 44500
+25
+0 360 arc
+fill
+newpath
+57400 44500
+25
+0 360 arc
+fill
+newpath
+55300 44500
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 54970 44470 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+55300 44500
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 42070 37370 fbox
+60 60 42070 36970 fbox
+60 60 42070 36570 fbox
+60 60 42070 36170 fbox
+60 60 46170 36170 fbox
+60 60 46170 36570 fbox
+60 60 46170 36970 fbox
+60 60 46170 37370 fbox
+60 60 49120 37370 fbox
+60 60 49120 36970 fbox
+60 60 49120 36170 fbox
+60 60 49120 36570 fbox
+60 60 53220 36170 fbox
+60 60 53220 36570 fbox
+60 60 53220 36970 fbox
+60 60 53220 37370 fbox
+60 60 35470 36620 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+45400 49850
+25
+0 360 arc
+fill
+newpath
+45400 49850
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 46220 47920 fbox
+60 60 44570 47920 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+45400 47950
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 46220 49820 fbox
+60 60 44570 49820 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+45400 49850
+25
+0 360 arc
+fill
+newpath
+48700 49850
+25
+0 360 arc
+fill
+newpath
+48700 49850
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 49520 47920 fbox
+60 60 47870 47920 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+48700 47950
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 49520 49820 fbox
+60 60 47870 49820 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+48700 49850
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 46670 51270 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+47900 52000
+25
+0 360 arc
+fill
+newpath
+47900 52000
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 46670 52770 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+47900 53500
+25
+0 360 arc
+fill
+newpath
+47900 53500
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 57720 50570 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 50600
+25
+0 360 arc
+fill
+newpath
+57400 49950
+25
+0 360 arc
+fill
+newpath
+57400 49950
+25
+0 360 arc
+fill
+newpath
+57400 50600
+25
+0 360 arc
+fill
+newpath
+57400 49950
+25
+0 360 arc
+fill
+newpath
+57400 49150
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 54970 49920 fbox
+60 60 57720 53620 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 53650
+25
+0 360 arc
+fill
+newpath
+57400 53000
+25
+0 360 arc
+fill
+newpath
+57400 53000
+25
+0 360 arc
+fill
+newpath
+57400 53650
+25
+0 360 arc
+fill
+newpath
+57400 53000
+25
+0 360 arc
+fill
+newpath
+57400 52200
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 54970 52970 fbox
+60 60 47970 43270 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+47900 43300
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 46670 43270 fbox
+60 60 47970 41770 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+47900 41800
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 46670 41770 fbox
+60 60 46670 41070 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+47900 41800
+25
+0 360 arc
+fill
+newpath
+47900 41800
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 46670 42570 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+47900 43300
+25
+0 360 arc
+fill
+newpath
+47900 43300
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 38320 36620 fbox
+60 60 38620 36620 fbox
+60 60 54970 53620 fbox
+60 60 54970 51420 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 52200
+25
+0 360 arc
+fill
+newpath
+57400 52200
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 54970 52170 fbox
+60 60 54970 50570 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 49150
+25
+0 360 arc
+fill
+newpath
+57400 49150
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 54970 48370 fbox
+60 60 54970 49120 fbox
+60 60 54970 45870 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+55300 45900
+25
+0 360 arc
+fill
+newpath
+55300 45900
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 57720 40120 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 40150
+25
+0 360 arc
+fill
+newpath
+57400 39500
+25
+0 360 arc
+fill
+newpath
+57400 39500
+25
+0 360 arc
+fill
+newpath
+57400 40150
+25
+0 360 arc
+fill
+newpath
+57400 39500
+25
+0 360 arc
+fill
+newpath
+57400 38700
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 54970 39470 fbox
+60 60 57720 43170 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 43200
+25
+0 360 arc
+fill
+newpath
+57400 42550
+25
+0 360 arc
+fill
+newpath
+57400 42550
+25
+0 360 arc
+fill
+newpath
+57400 43200
+25
+0 360 arc
+fill
+newpath
+57400 42550
+25
+0 360 arc
+fill
+newpath
+57400 41750
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 54970 42520 fbox
+60 60 54970 43170 fbox
+60 60 54970 40970 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 41750
+25
+0 360 arc
+fill
+newpath
+57400 41750
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 54970 41720 fbox
+60 60 54970 40120 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+57400 38700
+25
+0 360 arc
+fill
+newpath
+57400 38700
+25
+0 360 arc
+fill
+1.000 0.000 0.000 setrgbcolor
+60 60 54970 37920 fbox
+60 60 54970 38670 fbox
+60 60 35170 36620 fbox
+0.627 0.125 0.941 setrgbcolor
+newpath
+45400 47950
+25
+0 360 arc
+fill
+newpath
+45400 47950
+25
+0 360 arc
+fill
+newpath
+48700 47950
+25
+0 360 arc
+fill
+newpath
+48700 47950
+25
+0 360 arc
+fill
+showpage
+%%End
